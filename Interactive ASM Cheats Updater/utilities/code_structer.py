@@ -389,6 +389,8 @@ class CodeStruct:
         for addr in addr_list:
             if code_num == addr[0]:
                 position.append(addr)
+            elif self.code_struct[str(addr[0])]['0']['type'] == 'master_code_title':
+                position.append(addr)
         return position if position != [] else None
 
     def link_branch_addr(self, code_branch_detail: dict, code_num: str, is_master_code: bool):
