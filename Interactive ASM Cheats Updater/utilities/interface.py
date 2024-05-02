@@ -1162,7 +1162,8 @@ class CodeUpdaterInterface:
             b_op = self.get_code_chunck_by_pos(tar_position)['contents']['detail']['branch_detail']['branch_type']
             code_body = self.gen_branch_code_body(b_op, self.get_code_chunck_by_pos(tar_position)['processed']['allocated_addr'], (addr + offset * 4), self.code.ASM_type)
 
-            pattern = f"""C{tar_position[0]}C{tar_position[1]}BLC{cur_position[0]}C{cur_position[1]}O{cur_position[2]}"""
+            cur_position2 = self.get_code_chunck_by_pos(tar_position)['contents']['detail']['branch_detail']['branch_link'][0][2]
+            pattern = f"""C{tar_position[0]}C{tar_position[1]}BLC{cur_position[0]}C{cur_position[1]}O{cur_position2}"""
             output_msg = output_msg.replace(pattern, code_body)
 
         return output_msg
