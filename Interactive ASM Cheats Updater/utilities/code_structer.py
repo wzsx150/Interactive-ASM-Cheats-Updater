@@ -61,6 +61,27 @@ def remove_inner_code_linebreak(code_list: list):
     
     return purified_code_list
 
+def split_cheats_text(msg: str):
+    msg_blocks = []
+    current_block = []
+    lines = msg.split('\n')
+
+    for line in lines:
+        line = line.strip()  # Hints: trim whitespace characters
+        if not line:  # Hints: remove all empty lines
+            continue
+        
+        if re.match(r'^[\[\{]', line):  # Hints: Split the code using the characters '[' and '{'
+            if current_block:
+                msg_blocks.append('\n'.join(current_block))
+                current_block = []
+        current_block.append(line)
+
+    if current_block:
+        msg_blocks.append('\n'.join(current_block))
+    
+    return msg_blocks
+
 def bytes_to_int(bytearray):
     return int.from_bytes(bytearray, byteorder='big', signed=False)
 
@@ -111,7 +132,7 @@ class CodeStruct:
         pattern_code = re.compile(r'^ *([abcdef\d]{8}) *([abcdef\d]{8})? *([abcdef\d]{8})? *([abcdef\d]{8})? *$', re.I)
         pattern_long_asm_code = re.compile(r'^ *080([abcdef\d])0000 *([abcdef\d]{8}) *([abcdef\d]{8}) *([abcdef\d]{8}) *$', re.I)
 
-        code_list_raw = re.split('\n{2,}', remove_redudent_linebreak(raw_text))
+        code_list_raw = split_cheats_text(raw_text)
         self.code_list = []
         code_text = ''
         is_splited = False
