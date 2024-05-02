@@ -228,7 +228,7 @@ class CodeStruct:
     def is_neighbor(self, addr_main, addr_extend: int):
         if not isinstance(addr_main, int):
             addr = addr_main[-1]
-        return (abs(addr - addr_extend) == 4)
+        return (addr_extend - addr == 4)
 
     def is_asm_code_mergable(self, asm_dict_main: dict, asm_dict_extend: dict):  # Hints: Branch cannot merge with anything, pure value merge with neighbor asm
         in_same_cave = asm_dict_main['contents']['in_code_cave'] and asm_dict_extend['contents']['in_code_cave']
