@@ -1433,8 +1433,7 @@ class CodeUpdaterInterface:
             file.seek(0)
             file.truncate()
             file.write(file_text)
-            dialog.Dialog(None, {'title': '\n'.join(eval(self.msg_map['Cheat Code'])), 'text': '\n'.join(eval(self.msg_map['Saved'])), 'bitmap': 'warning', 'default': 0,
-                    'strings': ('\n'.join(eval(self.msg_map['OK'])), '\n'.join(eval(self.msg_map['Cancel'])))})
+            messagebox.showinfo(title=self.msgbox_title_map['Info'], message=self.msg_map['Cheat Code Saved'])
 
     def gen_bytes_content(self, code_body: list):
         bytes_content = bytearray()
@@ -1478,8 +1477,7 @@ class CodeUpdaterInterface:
                 file.seek(0)
                 file.truncate()
                 file.write(self.new_main_file.NSORaw4Mod)
-                dialog.Dialog(None, {'title': '\n'.join(eval(self.msg_map['NSO File'])), 'text': '\n'.join(eval(self.msg_map['Saved'])), 'bitmap': 'warning', 'default': 0,
-                        'strings': ('\n'.join(eval(self.msg_map['OK'])), '\n'.join(eval(self.msg_map['Cancel'])))})
+                messagebox.showinfo(title=self.msgbox_title_map['Info'], message=self.msg_map['NSO File Saved'])
             
             try:
                 if os.path.exists(os.path.join(self.tool_path, 'nsnsotool.exe')):

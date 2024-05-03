@@ -365,10 +365,12 @@ localization = {
             "value_warn": """['*** This ASM type code section ONLY has values. Please generate with caution. ***']""",
 
             "Cheat Code": """['Cheat Code']""",
+            "Cheat Code Saved": """['Cheat Code Saved']""",
             "Saved": """['Saved']""",
             "OK": """['OK']""",
             "Cancel": """['Cancel']""",
             "NSO File": """['NSO File']""",
+            "NSO File Saved": """['NSO File Saved']""",
         }
     },
     "loc_CN":
@@ -464,10 +466,12 @@ localization = {
             "value_warn": """['*** 这部分汇编码仅包含数值部分，请谨慎“生成”。 ***']""",
 
             "Cheat Code": """['金手指']""",
+            "Cheat Code Saved": """['金手指已保存']""",
             "Saved": """['已保存']""",
             "OK": """['确定']""",
             "Cancel": """['取消']""",
             "NSO File": """['NSO文件']""",
+            "NSO File Saved": """['NSO文件已保存']""",
         }
     }
 }
