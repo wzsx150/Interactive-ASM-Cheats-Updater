@@ -1022,6 +1022,84 @@ class CodeUpdaterInterface:
                             + '\n'.join(eval(self.msg_map[code_chunk['type']]))
                             + '\n\n'
                             + '\n'.join(eval(self.msg_map['force_generate'])))
+        elif (code_chunk['type'] == 'code_type_0x5X0X0' 
+            or (code_chunk['type'] == 'code_type_asm' and not code_chunk['contents']['in_code_text'] and not code_chunk['contents']['in_code_cave'])):  # Hints: code type 0x5X0X0, ASM Type 0x04 not in text
+            org_addr = None
+            org_addr_branch = None
+            addr = None
+            addr_branch = None
+
+            if code_chunk['contents']['in_code_text']:
+                addr_type = '[.Text]'
+            elif code_chunk['contents']['in_code_cave']:
+                addr_type = '[.CodeCave]'
+            elif code_chunk['contents']['rodata_offset'] is not None:
+                addr_type = '[.Rodata]'
+            elif code_chunk['contents']['rwdata_offset'] is not None:
+                addr_type = '[.Rwdata]'
+            elif code_chunk['contents']['bss_offset'] is not None:
+                addr_type = '[.Bss]'
+            elif code_chunk['contents']['multimedia_offset'] is not None:
+                addr_type = '[.Multimedia]'
+            elif code_chunk['contents']['in_unknown_cave']:
+                addr_type = '[.UnknownCave]'
+            else:
+                addr_type = '[.Unknown]'
+
+            org_addr = code_chunk['contents']['addr'][0]
+            org_addr_str = '0x' + (hex(org_addr)[2:]).zfill(8).upper()
+            addr = self.find_addr(position, is_branch_target = False)
+            if addr is not None:
+
+                code_size = len(code_chunk['contents']['raw'])
+                if isinstance(addr, int):
+                    addr_str = '0x' + (hex(addr)[2:]).zfill(8).upper()
+                    addr_msg = f'{addr_type}: {org_addr_str} -> {addr_str}'
+                    addr = [addr]
+                else:
+                    addr_str = list(map(lambda x:'0x'+(hex(x)[2:]).zfill(8).upper(), addr))
+                    addr_msg = f'{addr_type}: {org_addr_str} -> {addr_str}'
+
+                if code_chunk['contents']['in_code_text']:
+                    self.midASMDataContainer.update(self.fetch_wings(), self.fetch_extra_wings(), code_size, org_addr, org_addr_branch, addr, addr_branch)
+                    self.update_middle_ASM_output(self.midASMDataContainer)
+                else:
+                    [old_ASM, old_highlight] = self.midASMDataContainer.get_other_addr_msg(org_addr, code_size, True)
+                    self.old_ASM_text_out(old_ASM, old_highlight)
+                    [new_ASM, new_highlight] = self.midASMDataContainer.get_other_addr_msg(addr[0], code_size, False)
+                    self.new_ASM_text_out(new_ASM, new_highlight)
+
+            if code_chunk['type'] == 'code_type_0x5X0X0':
+                log_text_msg = (  '\n'
+                                + self.code_pattern['code_type_0x5']['description']
+                                + '\n\n'
+                                + '\n'.join(eval(self.code_pattern['code_type_0x5']['details']))
+                                + '\n\n'
+                                + addr_msg
+                                + '\n\n'
+                                + '\n'.join(eval(self.msg_map[self.code_pattern['code_type_0x5']['generate_type']]))
+                                + '\n\n'
+                                )
+            elif code_chunk['type'] == 'code_type_asm':
+                asm_type = self.str_map['asm_type_r']
+
+                if addr is None:
+                    gen_msg = '\n'.join(eval(self.msg_map['discard_or_regen']))
+                else:
+                    gen_msg = '\n'.join(eval(self.msg_map['flat_generate']))
+
+                if self.code.code_struct[str(position[0])]['info']['is_value_only']:
+                    gen_msg = (  gen_msg
+                               + '\n\n'
+                               + '\n'.join(eval(self.msg_map['value_warn'])))
+
+                log_text_msg = (  '\n'
+                                + '\n'.join(eval(self.msg_map['asm_code']))
+                                + '\n\n'
+                                + addr_msg
+                                + '\n\n'
+                                + gen_msg
+                                )
         elif code_chunk['type'] in self.code_pattern:  # Hints: Other Types
             log_text_msg = (  '\n'
                             + self.code_pattern[code_chunk['type']]['description']
@@ -1029,7 +1107,7 @@ class CodeUpdaterInterface:
                             + '\n'.join(eval(self.code_pattern[code_chunk['type']]['details']))
                             + '\n\n'
                             + '\n'.join(eval(self.msg_map[self.code_pattern[code_chunk['type']]['generate_type']])))
-        else:  # Hints: ASM Type
+        else:  # Hints: ASM Type 0x04
             org_addr = None
             org_addr_branch = None
             addr = None
@@ -1160,9 +1238,10 @@ class CodeUpdaterInterface:
         code_chunk = self.get_code_chunck_by_pos(position)
         
         if not is_branch_target:
-            allocated_addr = self.find_ready_made_addr(code_chunk['contents']['addr'][0], position)
-            if allocated_addr is not None:
-                return allocated_addr
+            if code_chunk['type'] == 'code_type_asm':
+                allocated_addr = self.find_ready_made_addr(code_chunk['contents']['addr'][0], position)
+                if allocated_addr is not None:
+                    return allocated_addr
 
             if code_chunk['contents']['rodata_offset'] is not None:
                 return code_chunk['contents']['rodata_offset'] + self.new_main_file.rodataStart
@@ -1177,7 +1256,10 @@ class CodeUpdaterInterface:
                 return code_chunk['contents']['multimedia_offset'] + self.new_main_file.multimediaStart
             
             if code_chunk['contents']['in_code_cave']:
-                return self.allocate_cave(len(code_chunk['contents']['raw']))
+                if code_chunk['type'] == 'code_type_asm':
+                    return self.allocate_cave(len(code_chunk['contents']['raw']))
+                else:
+                    return code_chunk['contents']['addr'][0]
             
             if code_chunk['contents']['in_unknown_cave']:
                 return code_chunk['contents']['addr'][0]
@@ -1243,12 +1325,19 @@ class CodeUpdaterInterface:
         single_line_code = []
         code_length = len(code_chunk['contents']['raw'])
 
-        for index in range(code_length):
-            single_line_code.append(
-                      code_chunk['contents']['head'][index]
-              + ' ' + (hex(addr + index * 4)[2:]).zfill(8).upper()
-              + ' ' + code_chunk['contents']['body'][index]
-            )
+        if code_chunk['type'] == 'code_type_0x5X0X0':
+            for index in range(code_length):
+                single_line_code.append(
+                          code_chunk['contents']['head'][index]
+                  + ' ' + (hex(addr + index * 4)[2:]).zfill(8).upper()
+                )
+        elif code_chunk['type'] == 'code_type_asm':
+            for index in range(code_length):
+                single_line_code.append(
+                          code_chunk['contents']['head'][index]
+                  + ' ' + (hex(addr + index * 4)[2:]).zfill(8).upper()
+                  + ' ' + code_chunk['contents']['body'][index]
+                )
 
         return '\n'.join(single_line_code)
     
@@ -1332,6 +1421,19 @@ class CodeUpdaterInterface:
         if self.code.is_title(code_chunk['type']):  # Hints: Title
             output_msg = '\n'.join(code_chunk['contents']['raw'])
 
+        elif code_chunk['type'] == 'code_type_0x5X0X0':  # Hints: code type 0x5X0X0
+            addr = self.find_addr(position, is_branch_target = False)
+            if self.code_pattern['code_type_0x5']['generate_type'] == 'force_discard':
+                output_msg = ''
+            elif self.code_pattern['code_type_0x5']['generate_type'] == 'force_generate':
+                output_msg = self.gen_code_from_code_chunk(code_chunk, addr)
+            elif self.code_pattern['code_type_0x5']['generate_type'] == 'flat_generate':
+                output_msg = self.gen_code_from_code_chunk(code_chunk, addr) if button == 'generate' else ''
+
+        elif (code_chunk['type'] == 'code_type_asm' and not code_chunk['contents']['in_code_text'] and not code_chunk['contents']['in_code_cave']):  # Hints: rodata and rwdata for ASM Type 0x04
+            addr = self.find_addr(position, is_branch_target = False)
+            output_msg = self.gen_code_from_code_chunk(code_chunk, addr) if button == 'generate' else ''
+
         elif code_chunk['type'] in self.code_pattern:  # Hints: Other Types
             if self.code_pattern[code_chunk['type']]['generate_type'] == 'force_discard':
                 output_msg = ''
@@ -1340,7 +1442,7 @@ class CodeUpdaterInterface:
             elif self.code_pattern[code_chunk['type']]['generate_type'] == 'flat_generate':
                 output_msg = '\n'.join(code_chunk['contents']['raw']) if button == 'generate' else ''
 
-        else:  # Hints: ASM Type
+        else:  # Hints: ASM Type 0x04
             if code_chunk['contents']['detail'] is not None and code_chunk['contents']['detail']['is_branch']:
                 if button == 'generate':
                     addr = self.midASMDataContainer.get_current_branch_addr()
@@ -1375,8 +1477,9 @@ class CodeUpdaterInterface:
             output_msg = self.output_cheats_text.get('1.0', END) + output_msg
         output_msg = output_msg[1:] if output_msg[0] == '\n' else output_msg
 
-        if 'BL' in output_msg and addr is not None:  # Hints: accelerate broadcast list process speed
-            output_msg = self.broadcast_link_update(output_msg, position, addr)
+        if code_chunk['type'] == 'code_type_asm':
+            if 'BL' in output_msg and addr is not None:  # Hints: accelerate broadcast list process speed
+                output_msg = self.broadcast_link_update(output_msg, position, addr)
         
         self.output_cheats_text_out(output_msg, need_clear = True, no_insert = no_insert and not need_linebreak)
         self.output_stack.push({'msg': output_msg, 'code_cave': deepcopy(self.code_cave)})
