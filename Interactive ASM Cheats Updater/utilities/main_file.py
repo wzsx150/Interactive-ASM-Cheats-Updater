@@ -72,6 +72,8 @@ class MainNSOStruct:
                 self.decompress()
             self.get_struct_from_file()
             self.get_mainfunc_file()
+            if len(self.Flags) == 0 or (int.from_bytes(self.Flags, 'little') & 0b111):
+                raise MainNSOError(generate_msg(self.msg_map['nsnsotool warning']))
             return True
 
     def decompress(self):
@@ -172,12 +174,12 @@ class MainNSOStruct:
         return self.Magic == 'NSO0'
 
     def is_Compressed(self):
-        buf = bytearray(os.path.getsize(self.file_path))
         with open(self.file_path, 'rb') as fp:
-            fp.readinto(buf)
-        self.Flags = bytearray_slice(buf, 3, byteorderbig = False)
-        return sum(self.Flags) != 0
-    
+            fp.seek(12)
+            flags_byte = fp.read(4)
+            flags = int.from_bytes(flags_byte, byteorder='little')
+        return (flags & 0b111)  # Nso Header from https://github.com/Atmosphere-NX/Atmosphere/blob/35d93a7c4188cda103957aa757fd31f9fe7d18cb/libraries/libstratosphere/include/stratosphere/ldr/ldr_types.hpp#L84
+
     def is_main_addr(self, addr):
         return addr in range(bytes_to_int(self.textFileOffset), bytes_to_int(self.textFileEnd))
 
