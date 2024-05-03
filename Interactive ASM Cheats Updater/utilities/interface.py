@@ -613,7 +613,8 @@ class CodeUpdaterInterface:
         else:
             self.log_text.insert('insert', f'[{time.asctime(time.localtime(time.time()))}] {msg}\n\n')
         self.log_text.config(state=DISABLED)
-        self.log_text.see(END)
+        if not need_clear:
+            self.log_text.see(END)
 
     def clear_log_text(self):
         self.log_text.config(state=NORMAL)
