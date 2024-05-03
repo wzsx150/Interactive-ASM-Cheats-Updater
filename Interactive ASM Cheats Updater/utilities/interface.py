@@ -351,7 +351,7 @@ class CodeUpdaterInterface:
         self.middle_cheats_button_frame = tkinter.Frame(self.middle_cheats_frame)
         self.middle_cheats_button_frame.pack(expand='yes', anchor='center', side='top', padx=5, pady=5)
         self.middle_cheats_button_frame.columnconfigure(0, weight=1)
-        self.btn_generate = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Generate'], width=10, command=self.generate)
+        self.btn_generate = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Start'], width=10, command=self.generate)
         self.btn_generate.grid(row=0, column=0, sticky="nsew")
         self.btn_generate.config(state=DISABLED)
         self.btn_skip = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Skip'], width=10, command=self.skip)
@@ -786,7 +786,7 @@ class CodeUpdaterInterface:
     def btn_after_1st_generate(self):
         self.btn_load_old_file.config(state=DISABLED)
         self.btn_load_new_file.config(state=DISABLED)
-        self.btn_generate.config(state=NORMAL)
+        self.btn_generate.config(state=NORMAL, text=self.btn_map['Generate'])
         self.btn_skip.config(state=NORMAL)
         self.btn_undo.config(state=NORMAL)
         self.btn_restart.config(state=NORMAL)
@@ -797,7 +797,7 @@ class CodeUpdaterInterface:
     def btn_after_restart(self):
         self.btn_load_old_file.config(state=NORMAL)
         self.btn_load_new_file.config(state=NORMAL)
-        self.btn_generate.config(state=NORMAL)
+        self.btn_generate.config(state=NORMAL, text=self.btn_map['Start'])
         self.btn_skip.config(state=DISABLED)
         self.btn_undo.config(state=DISABLED)
         self.btn_restart.config(state=DISABLED)
