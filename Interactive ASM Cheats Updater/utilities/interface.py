@@ -481,7 +481,7 @@ class CodeUpdaterInterface:
 
         # output_cheats_text right click window
         self.menuOut = tkinter.Menu(self.output_cheats_text, tearoff=0)
-        self.menuOut.add_command(label="copy", command=self.copyOut)
+        self.menuOut.add_command(label=self.btn_map['copy'], command=self.copyOut)
         self.output_cheats_text.bind("<Button-3>", self.popupmenuOut)
 
     def init_game_package_decomp(self, globalInfo):
