@@ -318,6 +318,7 @@ class CodeUpdaterInterface:
         self.input_cheats_text = ScrolledText(self.input_cheats_frame, width=40, height=400, wrap=WORD)
         self.input_cheats_text.pack(expand='yes', fill='both', anchor='w', side='top', padx=5, pady=5)
         # self.input_cheats_text.config(font=font_setting)
+        self.input_cheats_text.tag_config('highlight', background='yellow')
 
         # Middle cheats frame
         self.middle_cheats_frame = tkinter.Frame(self.main_cheats_frame, bd = 2, highlightthickness = 1, relief=RIDGE)
@@ -638,10 +639,15 @@ class CodeUpdaterInterface:
 
     def input_cheats_text_in(self):
         return self.input_cheats_text.get('1.0', END)
-    
+
     def input_cheats_text_out(self, msg: str):
         self.input_cheats_text.delete(0.1, END)
         self.input_cheats_text.insert('insert', msg)
+
+    def input_cheats_text_highlight(self, startline: int, endline: int):
+        self.input_cheats_text.tag_remove("highlight", "1.0", "end")
+        self.input_cheats_text.tag_add('highlight', f'{startline}.0', f'{endline}.end+1c')
+        self.input_cheats_text.see(f'{endline}.0')
 
     def current_cheats_text_out(self, msg: str, need_clear):
         self.current_cheats_text.config(state=NORMAL)
@@ -848,6 +854,7 @@ class CodeUpdaterInterface:
         self.force_ARM64.set(False)
         self.force_ARM64_checkbox.config(state=NORMAL)
         self.input_cheats_text.config(state=NORMAL)
+        self.input_cheats_text.tag_remove("highlight", "1.0", "end")
         self.current_cheats_text.config(state=NORMAL)
         self.current_cheats_text.delete(0.1, END)
         self.current_cheats_text.config(state=DISABLED)
@@ -936,6 +943,7 @@ class CodeUpdaterInterface:
 
     def set_current_cheats_text_out(self, position: list):
         code_struct = self.get_code_chunck_by_pos(position)
+        self.input_cheats_text_highlight(code_struct['contents']['line_num'] + 1, code_struct['contents']['line_num'] + len(code_struct['contents']['raw']))
         if code_struct['type'] != 'code_type_asm':
             self.current_cheats_text_out('\n'.join(code_struct['contents']['raw']), True)
         else:
@@ -1385,6 +1393,7 @@ class CodeUpdaterInterface:
             return
         
         if self.is_ended:
+            self.input_cheats_text.tag_remove("highlight", "1.0", "end")
             messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['code processing complete'])))
             return
 
@@ -1407,6 +1416,7 @@ class CodeUpdaterInterface:
 
     def skip(self):
         if self.is_ended:
+            self.input_cheats_text.tag_remove("highlight", "1.0", "end")
             messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['code processing complete'])))
             return
         

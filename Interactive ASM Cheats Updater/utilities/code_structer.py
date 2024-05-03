@@ -278,12 +278,14 @@ class CodeStruct:
                             'type': code_chunk['type'],
                             'contents':
                                 {
-                                    'raw': [code_chunk['contents']['raw']]
+                                    'raw': [code_chunk['contents']['raw']],
+                                    'line_num': code_chunk['contents']['line_num']
                                 }
                         }
                     }
                 }
             )
+        
         elif procedure == 'new_chunk':
             self.code_struct[str(new_position[0])].update(
                     {
@@ -292,7 +294,8 @@ class CodeStruct:
                             'type': code_chunk['type'],
                             'contents':
                                 {
-                                    'raw': [code_chunk['contents']['raw']]
+                                    'raw': [code_chunk['contents']['raw']],
+                                    'line_num': code_chunk['contents']['line_num']
                                 }
                         }
                     }
@@ -327,6 +330,7 @@ class CodeStruct:
                             'contents':
                                 {
                                     'raw': [code_chunk['contents']['raw']],
+                                    'line_num': code_chunk['contents']['line_num'],
                                     'head': [code_chunk['contents']['head']],
                                     'addr': [code_chunk['contents']['addr']],
                                     'body': [code_chunk['contents']['body']],
@@ -457,6 +461,7 @@ class CodeStruct:
         self.code_struct = {}
         self.addr_dict = {}
         self.position = [0, 0, 0]  # Hints: code_index, chunk_index, offset = 0, 0, 0
+        self.line_num = -2
         is_legal_code_body = False
         force_new_code = False
         self.struct_initialized = False
@@ -488,21 +493,25 @@ class CodeStruct:
 
         is_code_title = pattern_code_title.match(code)  # Warning: ":=" only for python > 3.8
         if is_code_title is not None:
+            self.line_num = self.line_num + 2
             return {
                 'type': 'code_title',
                 'contents':
                     {
-                        'raw': code
+                        'raw': code,
+                        'line_num': self.line_num
                     }
             }
 
         is_master_code_title = pattern_master_code_title.match(code)
         if is_master_code_title is not None:
+            self.line_num = self.line_num + 2
             return {
                 'type': 'master_code_title',
                 'contents':
                     {
-                        'raw': code
+                        'raw': code,
+                        'line_num': self.line_num
                     }
             }
 
@@ -564,11 +573,14 @@ class CodeStruct:
                                     'is_branch': is_branch,
                                     'branch_detail': branch_detail
                         } if can_be_disassembled else None
+
+            self.line_num = self.line_num + 1
             return {
                 'type': 'code_type_asm',
                 'contents':
                     {
                         'raw': code,
+                        'line_num': self.line_num,
                         'head': is_pattern_asm_code.group(1),
                         'addr': code_addr,
                         'body': is_pattern_asm_code.group(3),
@@ -582,19 +594,23 @@ class CodeStruct:
         for key in self.code_pattern:
             pattern = re.compile(eval(self.code_pattern[key]["pattern"]), re.I)
             if pattern.match(code) is not None:
+                self.line_num = self.line_num + 1
                 return {
                     'type': key,
                     'contents':
                         {
-                            'raw': code
+                            'raw': code,
+                            'line_num': self.line_num
                         }
                 }
 
-        return  {
+        self.line_num = self.line_num + 1
+        return {
             'type': 'code_type_unknown',
             'contents':
                 {
-                    'raw': code
+                    'raw': code,
+                    'line_num': self.line_num
                 }
         }
 
