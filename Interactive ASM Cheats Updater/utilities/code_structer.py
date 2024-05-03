@@ -233,11 +233,13 @@ class CodeStruct:
 
     def is_asm_code_mergable(self, asm_dict_main: dict, asm_dict_extend: dict):  # Hints: Branch cannot merge with anything, pure value merge with neighbor asm
         in_same_cave = asm_dict_main['contents']['in_code_cave'] and asm_dict_extend['contents']['in_code_cave']
+        in_same_rodata = asm_dict_main['contents']['rodata_offset'] is not None and asm_dict_extend['contents']['rodata_offset'] is not None
+        in_same_rwdata = asm_dict_main['contents']['rwdata_offset'] is not None and asm_dict_extend['contents']['rwdata_offset'] is not None
+        in_same_bss = asm_dict_main['contents']['bss_offset'] is not None and asm_dict_extend['contents']['bss_offset'] is not None
         in_same_multi = asm_dict_main['contents']['multimedia_offset'] is not None and asm_dict_extend['contents']['multimedia_offset'] is not None
-        in_same_main = (not asm_dict_main['contents']['in_code_cave'] and not asm_dict_extend['contents']['in_code_cave']
-                            and asm_dict_main['contents']['multimedia_offset'] is None and asm_dict_extend['contents']['multimedia_offset'] is None)
+        in_same_main = asm_dict_main['contents']['in_code_text'] and asm_dict_extend['contents']['in_code_text']
         if (self.is_neighbor(asm_dict_main['contents']['addr'], asm_dict_extend['contents']['addr'])
-                and (in_same_main or in_same_cave or in_same_multi)):
+                and (in_same_main or in_same_cave or in_same_rodata or in_same_rwdata or in_same_bss or in_same_multi)):
             if not (not asm_dict_main['contents']['is_value'][-1] and asm_dict_main['contents']['detail']['is_branch']):
                 if not (not asm_dict_extend['contents']['is_value'] and asm_dict_extend['contents']['detail']['is_branch']):
                     return True
@@ -312,8 +314,8 @@ class CodeStruct:
                             'branch_type': code_branch_detail['branch_type'],
                             'branch_addr': code_branch_detail['branch_addr'],
                             'branch_to_cave': code_branch_detail['branch_to_cave'],
-                            'branch_to_multi': code_branch_detail['branch_to_multi'],
-                            'branch_multi_offset': code_branch_detail['branch_multi_offset'],
+                            'branch_to_other': code_branch_detail['branch_to_other'],
+                            'branch_other_offset': code_branch_detail['branch_other_offset'],
                     } if code_chunk['contents']['detail']['is_branch'] else None
             
             detail = {
@@ -335,7 +337,12 @@ class CodeStruct:
                                     'addr': [code_chunk['contents']['addr']],
                                     'body': [code_chunk['contents']['body']],
                                     'is_value': [code_chunk['contents']['is_value']],
+                                    'in_code_text': code_chunk['contents']['in_code_text'],
                                     'in_code_cave': code_chunk['contents']['in_code_cave'],
+                                    'in_unknown_cave': code_chunk['contents']['in_unknown_cave'],
+                                    'rodata_offset': code_chunk['contents']['rodata_offset'],
+                                    'rwdata_offset': code_chunk['contents']['rwdata_offset'],
+                                    'bss_offset': code_chunk['contents']['bss_offset'],
                                     'multimedia_offset': code_chunk['contents']['multimedia_offset'],
                                     'detail': detail
                                 }
@@ -524,26 +531,41 @@ class CodeStruct:
                 Disassembler = Cs(CS_ARCH_ARM, CS_MODE_LITTLE_ENDIAN)
 
             can_be_disassembled = False
+            in_code_text = False
             in_code_cave = False
+            in_unknown_cave = False  # Hints: rodata cave and rwdata cave
+            rodata_offset = None
+            rwdata_offset = None
+            bss_offset = None
             multimedia_offset = None
             is_branch = False
             code_addr = int(is_pattern_asm_code.group(2), 16)
             code_bytes = bytearray.fromhex(is_pattern_asm_code.group(3))
             code_bytes.reverse()
 
-            if (code_addr >= bytes_to_int(self.old_main_file.codeCaveStart)
-                and code_addr < bytes_to_int(self.old_main_file.codeCaveEnd)):
+            if (code_addr < bytes_to_int(self.old_main_file.codeCaveStart)):
+                in_code_text = True
+            elif (code_addr >= bytes_to_int(self.old_main_file.codeCaveStart) and code_addr < bytes_to_int(self.old_main_file.codeCaveEnd)):
                 in_code_cave = True
-            if code_addr >= bytes_to_int(self.old_main_file.rodataMemoryOffset):
-                multimedia_offset = code_addr - bytes_to_int(self.old_main_file.rodataMemoryOffset)
+            elif (code_addr >= self.old_main_file.rodataStart and code_addr < self.old_main_file.rodataEnd):
+                rodata_offset = code_addr - self.old_main_file.rodataStart
+            elif (code_addr >= self.old_main_file.rwdataStart and code_addr < self.old_main_file.rwdataEnd):
+                rwdata_offset = code_addr - self.old_main_file.rwdataStart
+            elif (code_addr >= self.old_main_file.bssStart and code_addr < self.old_main_file.bssEnd):
+                bss_offset = code_addr - self.old_main_file.bssStart
+            elif code_addr >= self.old_main_file.multimediaStart:
+                multimedia_offset = code_addr - self.old_main_file.multimediaStart
+            elif code_addr > self.old_main_file.rodataStart:  # Hints: rodata cave and rwdata cave
+                in_unknown_cave = True
+
             for i in Disassembler.disasm(code_bytes, code_addr):
                 can_be_disassembled = True
 
                 if i.mnemonic == 'bl' or i.mnemonic == 'b' or ('b.' in i.mnemonic) or (i.mnemonic == 'adr' and '#' in i.op_str):
                     is_branch = True
                     branch_to_cave = False
-                    branch_to_multi = False
-                    branch_multi_offset = None
+                    branch_to_other = None
+                    branch_other_offset = None
                     branch_type = i.mnemonic
                     if branch_type == 'adr' and '#' in i.op_str:  # Hints: Add extra branch type here
                         [extra_op, branch_addr] = i.op_str.split('#')
@@ -554,9 +576,22 @@ class CodeStruct:
                     if (branch_addr >= bytes_to_int(self.old_main_file.codeCaveStart)
                             and branch_addr < bytes_to_int(self.old_main_file.codeCaveEnd)):
                         branch_to_cave = True
-                    if branch_addr >= bytes_to_int(self.old_main_file.rodataMemoryOffset):
-                        branch_to_multi = True
-                        branch_multi_offset = branch_addr - bytes_to_int(self.old_main_file.textMemoryOffset)
+                    if branch_addr >= self.old_main_file.rodataStart:
+                        if branch_addr < self.old_main_file.rodataEnd:
+                            branch_to_other = '[.Rodata]'
+                            branch_other_offset = branch_addr - self.old_main_file.rodataStart
+                        elif branch_addr < self.old_main_file.rwdataEnd:
+                            branch_to_other = '[.Rwdata]'
+                            branch_other_offset = branch_addr - self.old_main_file.rwdataStart
+                        elif branch_addr < self.old_main_file.bssEnd:
+                            branch_to_other = '[.Bss]'
+                            branch_other_offset = branch_addr - self.old_main_file.bssStart
+                        elif branch_addr >= self.old_main_file.multimediaStart:
+                            branch_to_other = '[.Multimedia]'
+                            branch_other_offset = branch_addr - self.old_main_file.multimediaStart
+                        elif branch_addr > self.old_main_file.rodataStart:  # Hints: rodata cave and rwdata cave
+                            branch_to_other = '[.UnknownCave]'
+                            branch_other_offset = branch_addr - self.old_main_file.rodataStart
                     
                 asm_code_disam = ("0X%s:\t%s\t%s" %(hex(i.address)[2:].upper(), i.mnemonic.upper(), i.op_str.upper()))
                 asm_code_disam = asm_code_disam.replace('0X', '0x')
@@ -565,8 +600,8 @@ class CodeStruct:
                                     'branch_type': branch_type,
                                     'branch_addr': branch_addr,
                                     'branch_to_cave': branch_to_cave,
-                                    'branch_to_multi': branch_to_multi,
-                                    'branch_multi_offset': branch_multi_offset,
+                                    'branch_to_other': branch_to_other,
+                                    'branch_other_offset': branch_other_offset,
                             } if is_branch else None
             detail = {
                                     'disam': asm_code_disam,
@@ -585,7 +620,12 @@ class CodeStruct:
                         'addr': code_addr,
                         'body': is_pattern_asm_code.group(3),
                         'is_value': not can_be_disassembled,  # Hints: assuming type 0x0[12]xxxxxx need alignment and not an asm value
+                        'in_code_text': in_code_text,
                         'in_code_cave': in_code_cave,
+                        'in_unknown_cave': in_unknown_cave,
+                        'rodata_offset': rodata_offset,
+                        'rwdata_offset': rwdata_offset,
+                        'bss_offset': bss_offset,
                         'multimedia_offset': multimedia_offset,
                         'detail': detail
                     }

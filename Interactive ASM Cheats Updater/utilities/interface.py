@@ -981,12 +981,22 @@ class CodeUpdaterInterface:
             addr = None
             addr_branch = None
 
-            if code_chunk['contents']['in_code_cave']:
+            if code_chunk['contents']['in_code_text']:
+                addr_type = '[.Text]'
+            elif code_chunk['contents']['in_code_cave']:
                 addr_type = '[.CodeCave]'
+            elif code_chunk['contents']['rodata_offset'] is not None:
+                addr_type = '[.Rodata]'
+            elif code_chunk['contents']['rwdata_offset'] is not None:
+                addr_type = '[.Rwdata]'
+            elif code_chunk['contents']['bss_offset'] is not None:
+                addr_type = '[.Bss]'
             elif code_chunk['contents']['multimedia_offset'] is not None:
                 addr_type = '[.Multimedia]'
+            elif code_chunk['contents']['in_unknown_cave']:
+                addr_type = '[.UnknownCave]'
             else:
-                addr_type = '[.Text]'
+                addr_type = '[.Unknown]'
 
             org_addr = code_chunk['contents']['addr'][0]
             addr = self.find_addr(position, is_branch_target = False)
@@ -1006,8 +1016,8 @@ class CodeUpdaterInterface:
 
                 if branch_chunk['branch_to_cave']:
                     addr_type = 'Branch to [.CodeCave]'
-                elif branch_chunk['branch_to_multi']:
-                    addr_type = 'Branch to [.Multimedia]'
+                elif branch_chunk['branch_to_other'] is not None:
+                    addr_type = f'Branch to {branch_chunk['branch_to_other']}'
                 else:
                     addr_type = 'Branch to [.Text]'
                     org_addr_branch = branch_chunk['branch_addr']
@@ -1100,16 +1110,29 @@ class CodeUpdaterInterface:
             if allocated_addr is not None:
                 return allocated_addr
 
+            if code_chunk['contents']['rodata_offset'] is not None:
+                return code_chunk['contents']['rodata_offset'] + self.new_main_file.rodataStart
+            
+            if code_chunk['contents']['rwdata_offset'] is not None:
+                return code_chunk['contents']['rwdata_offset'] + self.new_main_file.rwdataStart
+            
+            if code_chunk['contents']['bss_offset'] is not None:
+                return code_chunk['contents']['bss_offset'] + self.new_main_file.bssStart
+            
             if code_chunk['contents']['multimedia_offset'] is not None:
-                return code_chunk['contents']['multimedia_offset'] + bytes_to_int(self.new_main_file.rodataMemoryOffset)
+                return code_chunk['contents']['multimedia_offset'] + self.new_main_file.multimediaStart
             
             if code_chunk['contents']['in_code_cave']:
                 return self.allocate_cave(len(code_chunk['contents']['raw']))
+            
+            if code_chunk['contents']['in_unknown_cave']:
+                return code_chunk['contents']['addr'][0]
             
             if code_chunk['contents']['detail'] is None or not code_chunk['contents']['detail']['is_branch']:
                 code_type = 'normal'
             else:
                 code_type = 'branch_target' if is_branch_target else 'branch_addr'
+            
             addr_list = self.find_main_addr([code_chunk['contents']['addr'][0], code_chunk['contents']['addr'][-1] + 4], code_type)
             if addr_list is not None:
                 return addr_list if len(addr_list) != 1 else addr_list[0]
@@ -1119,7 +1142,7 @@ class CodeUpdaterInterface:
         else:
             branch_chunk = code_chunk['contents']['detail']['branch_detail']
 
-            if (branch_chunk['branch_to_cave'] or branch_chunk['branch_to_multi']) and branch_chunk['branch_link'] is None:  # Hints: meaningless pointer
+            if (branch_chunk['branch_to_cave'] or (branch_chunk['branch_to_other'] is not None)) and branch_chunk['branch_link'] is None:  # Hints: meaningless pointer
                 return None
             
             if branch_chunk['branch_link'] is not None:

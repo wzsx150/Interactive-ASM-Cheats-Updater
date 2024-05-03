@@ -16,6 +16,9 @@ def bytearray_slice(bytearray, loc, byteorderbig = False):
 def bytes_to_int(bytearray):
     return int.from_bytes(bytearray, byteorder='big', signed=False)
 
+def get_pages_size(code_size):
+    return ((code_size & 0xFFFFF000) + 0x1000)
+
 generate_msg = lambda x:'\n'.join(eval(x))
 
 
@@ -37,10 +40,25 @@ class MainNSOStruct:
         self.rodataFileOffset = bytearray(4)  # rodata base address in main file
         self.rodataMemoryOffset = bytearray(4)  # rodata base address in console memory
         self.rodataDecompSize = bytearray(4)
+        self.ModuleSize = bytearray(4)
+        self.rwdataFileOffset = bytearray(4)  # rwdata base address in main file
+        self.rwdataMemoryOffset = bytearray(4)  # rwdata base address in console memory
+        self.rwdataDecompSize = bytearray(4)
+        self.bssSize = bytearray(4)
         self.ModuleId = ''  # build_id
+
         self.textFileEnd = bytearray(4)
         self.codeCaveStart = bytearray(4)
         self.codeCaveEnd = bytearray(4)
+        self.bssMemoryOffset = bytearray(4)  # bss base address in console memory
+
+        self.rodataStart = 0x0
+        self.rodataEnd = 0x0
+        self.rwdataStart = 0x0
+        self.rwdataEnd = 0x0
+        self.bssStart = 0x0
+        self.bssEnd = 0x0
+        self.multimediaStart = 0x0
 
         self.NSORaw = bytearray()
         self.NSORaw4Mod = bytearray()
@@ -113,6 +131,11 @@ class MainNSOStruct:
         self.rodataFileOffset = bytearray_slice(buf, 8, byteorderbig = True)
         self.rodataMemoryOffset = bytearray_slice(buf, 9, byteorderbig = True)
         self.rodataDecompSize = bytearray_slice(buf, 10, byteorderbig = True)
+        self.ModuleSize = bytearray_slice(buf, 11, byteorderbig = True)
+        self.rwdataFileOffset = bytearray_slice(buf, 12, byteorderbig = True)
+        self.rwdataMemoryOffset = bytearray_slice(buf, 13, byteorderbig = True)
+        self.rwdataDecompSize = bytearray_slice(buf, 14, byteorderbig = True)
+        self.bssSize = bytearray_slice(buf, 15, byteorderbig = True)
 
         offset = 16 
         self.ModuleId = ''.join('{:02x}'.format(x) for x in buf[4*offset : 8+4*offset])
@@ -126,7 +149,17 @@ class MainNSOStruct:
         else:
             self.codeCaveStart = bytearray.fromhex('00000000')
             self.codeCaveEnd = bytearray.fromhex('00000000')
-    
+
+        self.rodataStart = bytes_to_int(self.rodataMemoryOffset)
+        self.rodataEnd = self.rodataStart + bytes_to_int(self.rodataDecompSize)
+        self.rwdataStart = bytes_to_int(self.rwdataMemoryOffset)
+        self.rwdataEnd = self.rwdataStart + bytes_to_int(self.rwdataDecompSize)
+        self.bssStart = get_pages_size(self.rwdataEnd)
+        self.bssEnd = self.bssStart + bytes_to_int(self.bssSize)
+        self.multimediaStart = get_pages_size(self.bssEnd)
+
+        self.bssMemoryOffset = self.bssStart.to_bytes(4, byteorder='big', signed=False)
+
     def get_mainfunc_file(self):
         if self.is_NSO_file():
             self.mainFuncFile = self.NSORaw[bytes_to_int(self.textFileOffset) : bytes_to_int(self.textFileEnd)]
@@ -147,6 +180,12 @@ class MainNSOStruct:
     
     def is_main_addr(self, addr):
         return addr in range(bytes_to_int(self.textFileOffset), bytes_to_int(self.textFileEnd))
+
+    def is_rodata_addr(self, addr):
+        return addr in range(self.rodataStart, self.rodataEnd)
+
+    def is_rwdata_addr(self, addr):
+        return addr in range(self.rwdataStart, self.rwdataEnd)
 
     def has_code_cave(self):
         return (bytes_to_int(self.rodataMemoryOffset) -
@@ -175,6 +214,12 @@ class MainNSOStruct:
                         "rodataFileOffset": self.rodataFileOffset.hex(),
                         "rodataMemoryOffset": self.rodataMemoryOffset.hex(),
                         "rodataDecompSize": self.rodataDecompSize.hex(),
+                        "ModuleSize": self.ModuleSize.hex(),
+                        "rwdataFileOffset": self.rwdataFileOffset.hex(),
+                        "rwdataMemoryOffset": self.rwdataMemoryOffset.hex(),
+                        "rwdataDecompSize": self.rwdataDecompSize.hex(),
+                        "bssMemoryOffset": self.bssMemoryOffset.hex(),
+                        "bssSize": self.bssSize.hex(),
                         "ModuleId": self.ModuleId,
                         "textFileEnd": self.textFileEnd.hex(),
                         "codeCave":code_cave
