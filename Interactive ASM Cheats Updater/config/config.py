@@ -125,6 +125,46 @@ code_pattern = {
             "details":
                 """[f'Code type 0xC3 reads or writes a static register with a given register.']"""
         },
+        "code_type_0xF0":
+        {
+            "pattern": "r'^ *F0[abcdef\d]{6} *$'",
+            "generate_type": 'flat_generate',
+            "description": 'Code Type 0xF0: Double Extended-Width Instruction',
+            "details":
+                """[f'Code type 0xF0 signals to the VM to treat the upper three nybbles of the first dword as instruction type, instead of just the upper nybble.']"""
+        },
+        "code_type_0xFF0":
+        {
+            "pattern": "r'^ *FF0[abcdef\d]{5} *$'",
+            "generate_type": 'flat_generate',
+            "description": 'Code Type 0xFF0: Pause Process',
+            "details":
+                """[f'Code type 0xFF0 pauses the current process.']"""
+        },
+        "code_type_0xFF1":
+        {
+            "pattern": "r'^ *FF1[abcdef\d]{5} *$'",
+            "generate_type": 'flat_generate',
+            "description": 'Code Type 0xFF1: Resume Process',
+            "details":
+                """[f'Code type 0xFF1 resumes the current process.']"""
+        },
+        "code_type_0xFFF":
+        {
+            "pattern": "r'^ *FFF[1248][abcdef\d]{4} *( * [abcdef\d]{8}){0,1} *$'",
+            "generate_type": 'flat_generate',
+            "description": 'Code Type 0xFFF: Debug Log',
+            "details":
+                """[f'Code type 0xFFF writes a debug log.']"""
+        },
+        "code_type_padding":
+        {
+            "pattern": "r'^ *00000000.*$'",
+            "generate_type": 'flat_generate',
+            "description": 'Code Type Padding: Padding characters',
+            "details":
+                """[f'Code type padding has no actual meaning. it is just for placeholder purposes.']"""
+        },
         "code_type_unknown":
         {
             "pattern": "r'^NEVER MATCH$'",
@@ -259,6 +299,46 @@ code_pattern = {
             "description": 'Code Type 0xC3: 读/写静态寄存器',
             "details":
                 """[f'Code type 0xC3 将指定寄存器数据写入某静态寄存器，或读取某静态寄存器数据并存入指定寄存器。']"""
+        },
+        "code_type_0xF0":
+        {
+            "pattern": "r'^ *F0[abcdef\d]{6} *$'",
+            "generate_type": 'flat_generate',
+            "description": 'Code Type 0xF0: 双倍拓宽指令',
+            "details":
+                """[f'Code type 0xF0 向虚拟机发送信号处理第一个双字节上的三个半字节，用于代替上面的半字节。']"""
+        },
+        "code_type_0xFF0":
+        {
+            "pattern": "r'^ *FF0[abcdef\d]{5} *$'",
+            "generate_type": 'flat_generate',
+            "description": 'Code Type 0xFF0: 暂停运行进程',
+            "details":
+                """[f'Code type 0xFF0 暂停运行当前的进程。']"""
+        },
+        "code_type_0xFF1":
+        {
+            "pattern": "r'^ *FF1[abcdef\d]{5} *$'",
+            "generate_type": 'flat_generate',
+            "description": 'Code Type 0xFF1: 继续运行进程',
+            "details":
+                """[f'Code type 0xFF1 继续运行当前的进程。']"""
+        },
+        "code_type_0xFFF":
+        {
+            "pattern": "r'^ *FFF[1248][abcdef\d]{4} *( * [abcdef\d]{8}){0,1} *$'",
+            "generate_type": 'flat_generate',
+            "description": 'Code Type 0xFFF: 调试日志',
+            "details":
+                """[f'Code type 0xFFF 调试日志写入文件。']"""
+        },
+        "code_type_padding":
+        {
+            "pattern": "r'^ *00000000.*$'",
+            "generate_type": 'flat_generate',
+            "description": 'Code Type Padding: 填充字符',
+            "details":
+                """[f'Code type padding 没有实际意义，只是为了占位。']"""
         },
         "code_type_unknown":
         {
