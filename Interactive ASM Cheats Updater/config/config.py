@@ -414,6 +414,8 @@ localization = {
             "Extract NCA": """['Extracting NCA from game package...']""",
             "Extract ticket": """['Extracting ticket content from .tik...']""",
             "Extract main": """['Extracting main file from .nca...']""",
+            "old cheats text ready": """['Old codes normalization process is complete. you can now start the generation process.']""",
+            "code processing complete": """['All code processing is complete']""",
 
             "NOT NSO File": """['Error parsing the file, it may not be a valid NSO file.']""",
             "NSO file decompressed": """['NSO file decompressed.']""",
@@ -515,6 +517,8 @@ localization = {
             "Extract NCA": """['从游戏包提取NCA文件中...']""",
             "Extract ticket": """['从.tik获取相关信息中...']""",
             "Extract main": """['从.nca提取main文件中...']""",
+            "old cheats text ready": """['已完成旧金手指规范化处理，可以开始生成操作']""",
+            "code processing complete": """['金手指全部处理完毕']""",
 
             "NOT NSO File": """['解析文件出错，可能不是一个正常的NSO文件']""",
             "NSO file decompressed": """['已自动解压main文件']""",

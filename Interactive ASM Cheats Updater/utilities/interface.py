@@ -1323,6 +1323,7 @@ class CodeUpdaterInterface:
                 self.code = CodeStruct(self.input_cheats_text_in(), self.globalInfo, (self.old_main_file, self.new_main_file), self.force_ARM64.get())
                 self.input_cheats_text_out(self.code.get_normalized_code())
                 print(self.code.code_struct)
+                messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['old cheats text ready'])))
             except Exception as e:
                 self.logger.exception(e)
                 return
@@ -1337,6 +1338,7 @@ class CodeUpdaterInterface:
             return
         
         if self.is_ended:
+            messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['code processing complete'])))
             return
 
         self.generate_output(self.cur_position, 'generate')
@@ -1349,6 +1351,10 @@ class CodeUpdaterInterface:
         self.analysis_code(self.cur_position)
 
     def skip(self):
+        if self.is_ended:
+            messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['code processing complete'])))
+            return
+        
         self.generate_output(self.cur_position, 'skip')
         if self.check_next_step():
             self.next_step()
