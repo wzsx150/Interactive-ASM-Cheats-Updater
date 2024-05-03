@@ -260,7 +260,6 @@ class CodeUpdaterInterface:
         os.remove("xcw.ico")
 
         default_font = tkFont.nametofont("TkFixedFont")
-        default_font.configure(family="Helvetica")
 
         # Load file frame
         self.load_file_frame = tkinter.Frame(self.mainWin, width=1000, height=200, bg='LemonChiffon', relief=GROOVE)
