@@ -537,9 +537,11 @@ class CodeUpdaterInterface:
         if is_old_file:
             self.old_main_file = MainNSOStruct(file_path, self.globalInfo)
             self.old_is_NSO_file = self.old_main_file.process_file()
+            self.input_cheats_script.config(text='\n'.join(eval(self.hints_map['Input Old Codes and BID:'])))
         else:
             self.new_main_file = MainNSOStruct(file_path, self.globalInfo)
             self.new_is_NSO_file = self.new_main_file.process_file()
+            self.output_cheats_script.config(text='\n'.join(eval(self.hints_map['New Codes Output and BID:'])))
 
         if is_old_file:
             messagebox.showinfo(title='Info', message='\n'.join(eval(self.msg_map['BID message'])))
