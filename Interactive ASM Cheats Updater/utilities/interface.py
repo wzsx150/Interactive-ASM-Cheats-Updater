@@ -157,14 +157,67 @@ class MidASMDataContainer():
             if self.branch_addr_size == 0:
                 return
             self.branch_addr_index = (self.branch_addr_index+1)%len(self.branch_addr_list)
-        
+
+    def get_mainfile_hex(self, offset: int, mainfile, code_size: int, morelines = 10):
+        data_list = []
+        highlight_start = 0
+        if mainfile.is_rodata_addr(offset):
+            for ro_off in range(offset - morelines * 4, offset + (code_size + morelines) * 4, 4):
+                if not mainfile.is_rodata_addr(ro_off):
+                    continue
+                databuf = mainfile.mainRodataFile[ro_off - mainfile.rodataStart:ro_off - mainfile.rodataStart + 4]
+                data_list.append(hex(ro_off)[2:].zfill(8).upper() + ': ' + ' '.join(format(byte, '02x') for byte in databuf).upper())
+                if ro_off == offset:
+                    highlight_start = len(data_list) - 1
+        elif mainfile.is_rwdata_addr(offset):
+            for rw_off in range(offset - morelines * 4, offset + (code_size + morelines) * 4, 4):
+                if not mainfile.is_rwdata_addr(rw_off):
+                    continue
+                databuf = mainfile.mainRwdataFile[rw_off - mainfile.rwdataStart:rw_off - mainfile.rwdataStart + 4]
+                data_list.append(hex(rw_off)[2:].zfill(8).upper() + ': ' + ' '.join(format(byte, '02x') for byte in databuf).upper())
+                if rw_off == offset:
+                    highlight_start = len(data_list) - 1
+
+        return (data_list, highlight_start)
+
+    def get_other_addr_msg(self, offset: int, code_size: int, is_old_file = True):
+        mainfile = None
+        if is_old_file:
+            mainfile = self.old_main_file
+        else:
+            mainfile = self.new_main_file
+
+        if offset >= bytes_to_int(mainfile.codeCaveStart) and offset < bytes_to_int(mainfile.codeCaveEnd):
+            return (['Outside Address: [.CodeCave]'], [0.0, 0.0])
+        elif offset >= mainfile.bssStart and offset < mainfile.bssEnd:
+            return (['Outside Address: [.Bss]'], [0.0, 0.0])
+        elif offset >= mainfile.multimediaStart:
+            return (['Outside Address: [.Multimedia]'], [0.0, 0.0])
+
+        elif offset >= mainfile.rodataStart and offset < mainfile.rodataEnd:
+            (msg, highlight_start) = self.get_mainfile_hex(offset, mainfile, code_size)
+            msg.insert(0, '[.Rodata]')
+            return (msg, [highlight_start + 1.0, highlight_start + code_size + 0.0])
+        elif offset >= mainfile.rwdataStart and offset < mainfile.rwdataEnd:
+            (msg, highlight_start) = self.get_mainfile_hex(offset, mainfile, code_size)
+            msg.insert(0, '[.Rwdata]')
+            return (msg, [highlight_start + 1.0, highlight_start + code_size + 0.0])
+
+        elif offset >= mainfile.rodataStart:  # Hints: rodata cave and rwdata cave
+            return (['Outside Address: [.UnknownCave]'], [0.0, 0.0])
+        else:
+            return None  # Hints: [.Text]
+
     def get_msg_bundle(self, is_old_file = True) -> (list, list):
         if self.is_view_target and isinstance(self.branch_target_list[0], str):
             return (["[.CheatCode]: " + self.branch_target_list[0]], [0.0, 0.0])
 
-        if ((self.is_view_target and self.branch_target_list[self.branch_target_index] > len(self.new_main_file.mainFuncFile) - 1)
-            or (not self.is_view_target and self.branch_addr_list[self.branch_addr_index] > len(self.new_main_file.mainFuncFile) - 1)):
-            return (['Outside Address: [.CodeCave] or [.Multimedia]'], [0.0, 0.0])
+        if self.is_view_target:
+            if self.get_other_addr_msg(self.branch_target_list[self.branch_target_index], 1, False) is not None:
+                return self.get_other_addr_msg(self.branch_target_list[self.branch_target_index], 1, False)
+        else:
+            if self.get_other_addr_msg(self.branch_addr_list[self.branch_addr_index], 1, False) is not None:
+                return self.get_other_addr_msg(self.branch_addr_list[self.branch_addr_index], 1, False)
 
         if is_old_file:
             main_file = self.old_main_file
