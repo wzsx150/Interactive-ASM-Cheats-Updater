@@ -472,6 +472,8 @@ class CodeUpdaterInterface:
 
         # input_cheats_text right click window
         self.menu = tkinter.Menu(self.input_cheats_text, tearoff=0)
+        self.menu.add_command(label=self.btn_map['select all'], command=self.selectall)
+        self.menu.add_separator()
         self.menu.add_command(label=self.btn_map['copy'], command=self.copy)
         self.menu.add_separator()
         self.menu.add_command(label=self.btn_map['paste'], command=self.paste)
@@ -481,6 +483,8 @@ class CodeUpdaterInterface:
 
         # output_cheats_text right click window
         self.menuOut = tkinter.Menu(self.output_cheats_text, tearoff=0)
+        self.menuOut.add_command(label=self.btn_map['select all'], command=self.selectallout)
+        self.menuOut.add_separator()
         self.menuOut.add_command(label=self.btn_map['copy'], command=self.copyOut)
         self.output_cheats_text.bind("<Button-3>", self.popupmenuOut)
 
@@ -502,6 +506,9 @@ class CodeUpdaterInterface:
         image.close()
     
     # right-click functions
+    def selectall(self, event=None):
+        self.input_cheats_text.focus_set() 
+        self.input_cheats_text.event_generate("<<SelectAll>>")
     def cut(self, event=None):
         self.input_cheats_text.event_generate("<<Cut>>")
     def copy(self, event=None):
@@ -511,6 +518,9 @@ class CodeUpdaterInterface:
     def popupmenu(self, event):
         self.menu.post(event.x_root, event.y_root)
 
+    def selectallout(self, event=None):
+        self.output_cheats_text.focus_set() 
+        self.output_cheats_text.event_generate("<<SelectAll>>")
     def copyOut(self, event=None):
         self.output_cheats_text.event_generate("<<Copy>>")
     def popupmenuOut(self, event):
