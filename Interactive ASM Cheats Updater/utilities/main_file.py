@@ -5,6 +5,7 @@ from typing import Optional
 from asyncio.subprocess import PIPE, STDOUT
 
 from utilities.exception import MainNSOError
+from utilities.nsnsotool import NSOfile
 
 
 def bytearray_slice(bytearray, loc, byteorderbig = False):
@@ -25,11 +26,10 @@ generate_msg = lambda x:'\n'.join(eval(x))
 class MainNSOStruct:
     def __init__(self, file_path: str, globalInfo) -> None:
         self.file_path = file_path
+        self.globalInfo = globalInfo
         self.logger = globalInfo.logger
         self.msg_map = globalInfo.msg_map
         self.msgbox_title_map = globalInfo.msgbox_title_map
-        self.back_path = globalInfo.back_path
-        self.tool_path = globalInfo.tool_path
 
         self.Magic = ''
         self.Flags = bytearray(4)
@@ -77,29 +77,15 @@ class MainNSOStruct:
             return True
 
     def decompress(self):
-        file_name = os.path.basename(self.file_path)
-        if not os.path.exists(self.back_path):
-            os.makedirs(self.back_path)
-       
-        back_file_path = os.path.join(self.back_path, f'{file_name}_❀{int(time.time())}.bak')
-        shutil.copyfile(self.file_path, back_file_path)
-        if not os.path.exists(os.path.join(self.tool_path, 'nsnsotool.exe')):
-            messagebox.showerror(title=self.msgbox_title_map['Error'], message=generate_msg(self.msg_map['nsnsotool missing']))
-            raise MainNSOError(MainNSOError(generate_msg(self.msg_map['nsnsotool missing'])))
-
         try:
-            process = subprocess.Popen(["cmd"], shell=False, close_fds=True, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
-            commands = ('cd tools\n'
-                        f'nsnsotool "{self.file_path}"\n'
-                    )
-            outs, errs = process.communicate(commands.encode('utf-8'))
-            content = self.decode_outs_from_system(outs)
-            if content is not None:
-                print(*content, sep="\n")
+            org_file = NSOfile(self.file_path, self.globalInfo)
+            org_file.process_file()
+            if org_file.is_Compressed():
+                dec_file_path = org_file.generate_dec_path(self.file_path)
+                org_file.self_decompress()
         except Exception as e:
-            messagebox.showerror(title=self.msgbox_title_map['Error'], message=generate_msg(self.msg_map['nsnsotool warning']))
-            raise MainNSOError(MainNSOError(generate_msg(self.msg_map['nsnsotool warning'])))
-        
+            raise MainNSOError(f'The main file failed to decompress: {self.file_path}')
+
         self.logger.info(generate_msg(self.msg_map['NSO file decompressed']))
 
     def decode_outs_from_system(self, outs):

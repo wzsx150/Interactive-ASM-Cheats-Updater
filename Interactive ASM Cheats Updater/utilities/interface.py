@@ -14,6 +14,7 @@ from threading import Thread
 from sources.base64_icon import *
 from utilities.game_package import GamePackage
 from utilities.main_file import *
+from utilities.nsnsotool import NSOfile
 from utilities.code_structer import CodeStruct, PseudoStack
 from utilities.bytes_process import *
 from utilities.exception import GamePackageError
@@ -294,8 +295,6 @@ class CodeUpdaterInterface:
 
     def init_global_param(self, globalInfo):
         self.log_path = globalInfo.log_path
-        self.back_path = globalInfo.back_path
-        self.tool_path = globalInfo.tool_path
 
         self.hints_map = globalInfo.hints_map
         self.msgbox_title_map = globalInfo.msgbox_title_map
@@ -639,6 +638,14 @@ class CodeUpdaterInterface:
                 self.update_new_file_entry(updated_file_path)
             file_path = updated_file_path
         
+        org_file = NSOfile(file_path, self.globalInfo)
+        org_file.process_file()
+        if org_file.is_Compressed():
+            dec_file_path = org_file.generate_dec_path(file_path)
+            org_file.decompress(dec_file_path)
+            file_path = dec_file_path
+            self.logger.info(generate_msg(self.msg_map['NSO file decompressed']))
+
         if is_old_file:
             self.old_main_file = MainNSOStruct(file_path, self.globalInfo)
             self.old_is_NSO_file = self.old_main_file.process_file()
@@ -1737,18 +1744,12 @@ class CodeUpdaterInterface:
                 file.seek(0)
                 file.truncate()
                 file.write(self.new_main_file.NSORaw4Mod)
-                messagebox.showinfo(title=self.msgbox_title_map['Info'], message=self.str_map['NSO File Saved'])
             
             try:
-                if os.path.exists(os.path.join(self.tool_path, 'nsnsotool.exe')):
-                    process = subprocess.Popen(["cmd"], shell=False, close_fds=True, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
-                    commands = ('cd tools\n'
-                                f'nsnsotool "{file_path}"\n'
-                            )
-                    process.communicate(commands.encode('utf-8'))
-                else:
-                    messagebox.showerror(title=self.msgbox_title_map['Error'], message='\n'.join(eval(self.msg_map['nsnsotool missing'])))
-
+                save_file = NSOfile(file_path, self.globalInfo)
+                save_file.process_file()
+                save_file.self_compress()
+                messagebox.showinfo(title=self.msgbox_title_map['Info'], message=self.str_map['NSO File Saved'])
             except Exception as e:
                 messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['nsnsotool warning'])))
                 self.logger.exception(e)  

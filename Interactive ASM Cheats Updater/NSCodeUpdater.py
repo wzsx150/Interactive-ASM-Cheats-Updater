@@ -13,8 +13,6 @@ def main(language: str):
 class GlobalInfo:  # Read-ONLY Property
     def __init__(self, root_path: str, language: str):
         self.root_path = root_path
-        self.back_path = os.path.join(self.root_path, 'back_up')
-        self.tool_path = os.path.join(self.root_path, 'tools')
         self.log_path = os.path.join(self.root_path, 'log')
 
         self.logger = Logger(root_path)
