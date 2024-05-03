@@ -400,6 +400,8 @@ localization = {
             "Update": "Update",
             "Prev": "Prev Addr",
             "Next": "Next Addr",
+            "Force Exit": "Force Quit",
+
             "select all": "select all",
             "copy": "copy",
             "paste": "paste",
@@ -415,6 +417,7 @@ localization = {
             "Extract NCA": """['Extracting NCA from game package...']""",
             "Extract ticket": """['Extracting ticket content from .tik...']""",
             "Extract main": """['Extracting main file from .nca...']""",
+            "processing": """['Processing, please wait...']""",
             "old cheats text ready": """['Old codes normalization process is complete. you can now start the generation process.']""",
             "code processing complete": """['All code processing is complete']""",
 
@@ -504,6 +507,8 @@ localization = {
             "Update": "更新",
             "Prev": "上个地址",
             "Next": "下个地址",
+            "Force Exit": "强制退出",
+
             "select all": "全选",
             "copy": "复制",
             "paste": "粘贴",
@@ -519,6 +524,7 @@ localization = {
             "Extract NCA": """['从游戏包提取NCA文件中...']""",
             "Extract ticket": """['从.tik获取相关信息中...']""",
             "Extract main": """['从.nca提取main文件中...']""",
+            "processing": """['正在处理，请稍等...']""",
             "old cheats text ready": """['已完成旧金手指规范化处理，可以开始生成操作']""",
             "code processing complete": """['金手指全部处理完毕']""",
 

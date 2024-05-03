@@ -9,6 +9,7 @@ from tkinter import messagebox
 from tkinter.scrolledtext import ScrolledText
 from tkinter import filedialog
 import tkinter.font as tkFont
+from threading import Thread
 
 from sources.base64_icon import *
 from utilities.game_package import GamePackage
@@ -19,6 +20,7 @@ from utilities.exception import GamePackageError
 from utilities.logger import *
 
 from pathlib import Path
+import time
 
 
 def bytes_to_int(bytearray):
@@ -351,13 +353,13 @@ class CodeUpdaterInterface:
         self.middle_cheats_button_frame = tkinter.Frame(self.middle_cheats_frame)
         self.middle_cheats_button_frame.pack(expand='yes', anchor='center', side='top', padx=5, pady=5)
         self.middle_cheats_button_frame.columnconfigure(0, weight=1)
-        self.btn_generate = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Start'], width=10, command=self.generate)
+        self.btn_generate = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Start'], width=10, command=self.do_generate)
         self.btn_generate.grid(row=0, column=0, sticky="nsew")
         self.btn_generate.config(state=DISABLED)
-        self.btn_skip = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Skip'], width=10, command=self.skip)
+        self.btn_skip = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Skip'], width=10, command=self.do_skip)
         self.btn_skip.grid(row=0, column=1, sticky="nsew")
         self.btn_skip.config(state=DISABLED)
-        self.btn_undo = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Undo'], width=10, command=self.undo)
+        self.btn_undo = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Undo'], width=10, command=self.do_undo)
         self.btn_undo.grid(row=0, column=2, sticky="nsew")
         self.btn_undo.config(state=DISABLED)
         self.btn_restart = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Restart'], width=10, command=self.restart)
@@ -505,7 +507,44 @@ class CodeUpdaterInterface:
         image = open(pic_name, 'wb')
         image.write(base64.b64decode(pic_base64))
         image.close()
-    
+
+    def process_window_on(self, running=None):
+        self.progress_window = tkinter.Toplevel(self.mainWin)
+        self.progress_window.title(self.msgbox_title_map['Info'])
+        self.progress_window.overrideredirect(True)  # Hints: no title bar
+
+        window_width = 250
+        window_height = 150
+        screen_width = self.progress_window.winfo_screenwidth()
+        screen_height = self.progress_window.winfo_screenheight()
+        center_x = int((screen_width - window_width) / 2)
+        center_y = int((screen_height - window_height) / 2)
+
+        self.progress_window.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+        self.progress_window.grab_set()
+
+        self.progress_label = tkinter.Label(self.progress_window, text='\n'.join(eval(self.msg_map['processing'])))
+        self.progress_label.pack(pady=30)
+        self.btn_exit = tkinter.Button(self.progress_window, text=self.btn_map['Force Exit'], command=self.force_exit_program, state=DISABLED)
+        self.btn_exit.pack(pady=5)
+        self.progress_window.after(5000, lambda: self.btn_exit.config(state=NORMAL))  # Hints: 5s
+
+    def process_window_off(self, event=None):
+        if self.progress_window:
+            self.progress_window.grab_release()
+            self.progress_window.destroy()
+            self.progress_window = None
+
+    def enable_exit_button(self):
+        self.btn_exit.config(state=NORMAL)
+
+    def force_exit_program(self, event=None):
+        self.logger.warning('======== Force Exit ========\n')
+        self.progress_window.destroy()
+        self.mainWin.destroy()
+        timer.sleep(2)
+        sys.exit()
+
     # right-click functions
     def selectall(self, event=None):
         self.input_cheats_text.focus_set() 
@@ -1316,7 +1355,15 @@ class CodeUpdaterInterface:
             return True
         
         return False
-    
+
+    def do_generate(self):
+        self.process_window_on()
+        Thread(target=self.do_generate_win).start()
+
+    def do_generate_win(self):
+        self.generate()
+        self.mainWin.after(0, self.process_window_off)
+
     def generate(self):
         if not self.is_initialized:
             try:
@@ -1350,6 +1397,14 @@ class CodeUpdaterInterface:
             return
         self.analysis_code(self.cur_position)
 
+    def do_skip(self):
+        self.process_window_on()
+        Thread(target=self.do_skip_win).start()
+
+    def do_skip_win(self):
+        self.skip()
+        self.mainWin.after(0, self.process_window_off)
+
     def skip(self):
         if self.is_ended:
             messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['code processing complete'])))
@@ -1363,7 +1418,15 @@ class CodeUpdaterInterface:
             self.is_ended = True
             return
         self.analysis_code(self.cur_position)
-    
+
+    def do_undo(self):
+        self.process_window_on()
+        Thread(target=self.do_undo_win).start()
+
+    def do_undo_win(self):
+        self.undo()
+        self.mainWin.after(0, self.process_window_off)
+
     def undo(self):
         if not self.check_previous_step():
             self.restart()
