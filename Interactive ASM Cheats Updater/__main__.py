@@ -24,6 +24,7 @@ class GlobalInfo:  # Read-ONLY Property
         self.hints_map = localization[language]['hints_map']
         self.btn_map = localization[language]['btn_map']
         self.msg_map = localization[language]['msg_map']
+        self.str_map = localization[language]['str_map']
         self.wing_length_default = localization[language]['wing_length_default']
         self.extra_wing_length_default = localization[language]['extra_wing_length_default']
 
@@ -34,3 +35,4 @@ class GlobalInfo:  # Read-ONLY Property
 
 if __name__ == '__main__':
     main('loc_EN')
+    # main('loc_CN')

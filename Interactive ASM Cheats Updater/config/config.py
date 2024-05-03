@@ -434,7 +434,8 @@ localization = {
 
             "code_title": """['This is code title.']""",
             "master_code_title": """['This is master code title.']""",
-            "asm_code": """[f'This is{asm_type} assembly code.']""",
+            "asm_code": """[f'This is {asm_type} assembly code.',
+                            'Code Type 0x0: Store Static Value to Memory.']""",
 
             "none_addr_located":  """[f'{addr_type}: None address located.']""",
             "single_addr_located":  """[f'{addr_type}: Single address "{addr_str}" located.']""",
@@ -449,14 +450,20 @@ localization = {
 
             "wing_length_warn": """['*** Wing Length = [Branch Address Search Area, Branch Target Search Area] for NOW ***']""",
             "value_warn": """['*** This ASM type code section ONLY has values. Please generate with caution. ***']""",
+        },
+        "str_map":
+        {
+            "addr_type_b": "Branch to ",
+            "asm_type_r": "regular",
+            "asm_type_b": "branch",
 
-            "Cheat Code": """['Cheat Code']""",
-            "Cheat Code Saved": """['Cheat Code Saved']""",
-            "Saved": """['Saved']""",
-            "OK": """['OK']""",
-            "Cancel": """['Cancel']""",
-            "NSO File": """['NSO File']""",
-            "NSO File Saved": """['NSO File Saved']""",
+            "Cheat Code": "Cheat Code",
+            "Cheat Code Saved": "Cheat Code Saved",
+            "Saved": "Saved",
+            "OK": "OK",
+            "Cancel": "Cancel",
+            "NSO File": "NSO File",
+            "NSO File Saved": "NSO File Saved",
         }
     },
     "loc_CN":
@@ -541,7 +548,8 @@ localization = {
 
             "code_title": """['这是普通码标题。']""",
             "master_code_title": """['这是大师码标题。']""",
-            "asm_code": """[f'这是{asm_type} 汇编码。']""",
+            "asm_code": """[f'这是{asm_type}汇编码。',
+                            'Code Type 0x0: 向内存地址写入数据。']""",
 
             "none_addr_located":  """[f'{addr_type}：未找到地址。']""",
             "single_addr_located":  """[f'{addr_type}：地址 "{addr_str}" 已定位。']""",
@@ -556,14 +564,20 @@ localization = {
 
             "wing_length_warn": """['*** 此处翼展宽度 = [金手指代码地址搜索区域，跳转目标地址搜索区域] ***']""",
             "value_warn": """['*** 这部分汇编码仅包含数值部分，请谨慎“生成”。 ***']""",
+        },
+        "str_map":
+        {
+            "addr_type_b": "跳转至",
+            "asm_type_r": "普通",
+            "asm_type_b": "branch跳转",
 
-            "Cheat Code": """['金手指']""",
-            "Cheat Code Saved": """['金手指已保存']""",
-            "Saved": """['已保存']""",
-            "OK": """['确定']""",
-            "Cancel": """['取消']""",
-            "NSO File": """['NSO文件']""",
-            "NSO File Saved": """['NSO文件已保存']""",
+            "Cheat Code": "金手指",
+            "Cheat Code Saved": "金手指已保存",
+            "Saved": "已保存",
+            "OK": "确定",
+            "Cancel": "取消",
+            "NSO File": "NSO文件",
+            "NSO File Saved": "NSO文件已保存",
         }
     }
 }

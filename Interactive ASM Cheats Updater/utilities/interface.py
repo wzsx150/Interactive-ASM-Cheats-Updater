@@ -248,6 +248,7 @@ class CodeUpdaterInterface:
         self.msgbox_title_map = globalInfo.msgbox_title_map
         self.btn_map = globalInfo.btn_map
         self.msg_map = globalInfo.msg_map
+        self.str_map = globalInfo.str_map
         self.wing_length_default = globalInfo.wing_length_default
         self.extra_wing_length_default = globalInfo.extra_wing_length_default
         self.supported_package_type = globalInfo.supported_package_type
@@ -1010,16 +1011,16 @@ class CodeUpdaterInterface:
                 addr_msg = self.gen_addr_msg('multi_addr_located', addr_type, addr_str)
 
             if code_chunk['contents']['detail'] is not None and code_chunk['contents']['detail']['is_branch']:
-                asm_type = ' branch'
+                asm_type = self.str_map['asm_type_b']
                 addr_branch = self.find_addr(position, is_branch_target = True)
                 branch_chunk = code_chunk['contents']['detail']['branch_detail']
 
                 if branch_chunk['branch_to_cave']:
-                    addr_type = 'Branch to [.CodeCave]'
+                    addr_type = self.str_map['addr_type_b'] + '[.CodeCave]'
                 elif branch_chunk['branch_to_other'] is not None:
-                    addr_type = f'Branch to {branch_chunk['branch_to_other']}'
+                    addr_type = self.str_map['addr_type_b'] + f"{branch_chunk['branch_to_other']}"
                 else:
-                    addr_type = 'Branch to [.Text]'
+                    addr_type = self.str_map['addr_type_b'] + '[.Text]'
                     org_addr_branch = branch_chunk['branch_addr']
 
                 if addr_branch is None:
@@ -1028,7 +1029,7 @@ class CodeUpdaterInterface:
                     addr_str = '0x' + (hex(addr_branch)[2:]).zfill(8).upper()
                     extra_addr_msg = self.gen_addr_msg('single_addr_located', addr_type, addr_str)
                 elif isinstance(addr_branch, str):
-                    addr_type = 'Branch to [.CheatCode]'
+                    addr_type = self.str_map['addr_type_b'] + '[.CheatCode]'
                     addr_str = addr_branch
                     extra_addr_msg = self.gen_addr_msg('single_addr_located', addr_type, addr_str)
                 else:
@@ -1051,7 +1052,7 @@ class CodeUpdaterInterface:
                            + '\n'.join(eval(self.msg_map['wing_length_warn'])))   
 
             else:
-                asm_type = ''
+                asm_type = self.str_map['asm_type_r']
 
                 if addr is None:
                     gen_msg = '\n'.join(eval(self.msg_map['discard_or_regen']))
@@ -1064,7 +1065,7 @@ class CodeUpdaterInterface:
                     gen_msg = (  gen_msg
                                + '\n\n'
                                + '\n'.join(eval(self.msg_map['value_warn'])))   
-            
+
             log_text_msg = (  '\n'
                             + '\n'.join(eval(self.msg_map['asm_code']))
                             + '\n\n'
@@ -1072,7 +1073,7 @@ class CodeUpdaterInterface:
                             + '\n\n'
                             + gen_msg
                             )
-        
+
             if addr is not None or addr_branch is not None:
                 code_size = len(code_chunk['contents']['raw'])
                 addr = [addr] if isinstance(addr, int) and addr is not None else addr
@@ -1237,7 +1238,7 @@ class CodeUpdaterInterface:
         for tar_position in broadcast_list:
             if 'processed' not in self.get_code_chunck_by_pos(tar_position):
                 continue
-            
+
             offset = self.get_code_chunck_by_pos(tar_position)['contents']['detail']['branch_detail']['branch_link'][0][2]  # Hints: branch to multi code chunk with same addr, choose the first generated one
             self.code.code_struct[str(tar_position[0])][str(tar_position[1])]['processed'].update(
                 {'allocated_branch_addr': addr + offset * 4})
@@ -1536,7 +1537,7 @@ class CodeUpdaterInterface:
             file.seek(0)
             file.truncate()
             file.write(file_text)
-            messagebox.showinfo(title=self.msgbox_title_map['Info'], message=self.msg_map['Cheat Code Saved'])
+            messagebox.showinfo(title=self.msgbox_title_map['Info'], message=self.str_map['Cheat Code Saved'])
 
     def gen_bytes_content(self, code_body: list):
         bytes_content = bytearray()
@@ -1580,7 +1581,7 @@ class CodeUpdaterInterface:
                 file.seek(0)
                 file.truncate()
                 file.write(self.new_main_file.NSORaw4Mod)
-                messagebox.showinfo(title=self.msgbox_title_map['Info'], message=self.msg_map['NSO File Saved'])
+                messagebox.showinfo(title=self.msgbox_title_map['Info'], message=self.str_map['NSO File Saved'])
             
             try:
                 if os.path.exists(os.path.join(self.tool_path, 'nsnsotool.exe')):
