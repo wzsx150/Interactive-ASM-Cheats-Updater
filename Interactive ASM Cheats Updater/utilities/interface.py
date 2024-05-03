@@ -21,6 +21,7 @@ from utilities.exception import GamePackageError
 from utilities.logger import *
 
 from pathlib import Path
+import pprint
 import time
 
 
@@ -286,12 +287,14 @@ class CodeUpdaterInterface:
 
         self.logger = globalInfo.logger
         self.logger.open()
+        self.logger.info('======== UI start ========')
 
         self.init_game_package_decomp(globalInfo)
 
         self.init_UI_param()
 
         self.mainWin.mainloop()
+        self.logger.info('======== UI close ========\n')
 
     def init_global_param(self, globalInfo):
         self.log_path = globalInfo.log_path
@@ -649,10 +652,14 @@ class CodeUpdaterInterface:
         if is_old_file:
             self.old_main_file = MainNSOStruct(file_path, self.globalInfo)
             self.old_is_NSO_file = self.old_main_file.process_file()
+            self.logger.info(f'Old Main File BID: {self.old_main_file.ModuleId.upper()}')
+            self.logger.info(f'Old Main File information: \n{pprint.pformat(self.old_main_file.to_Json(), sort_dicts=False)}')
             self.input_cheats_script.config(text='\n'.join(eval(self.hints_map['Input Old Codes and BID:'])))
         else:
             self.new_main_file = MainNSOStruct(file_path, self.globalInfo)
             self.new_is_NSO_file = self.new_main_file.process_file()
+            self.logger.info(f'New Main File BID: {self.new_main_file.ModuleId.upper()}')
+            self.logger.info(f'New Main File information: \n{pprint.pformat(self.new_main_file.to_Json(), sort_dicts=False)}')
             self.output_cheats_script.config(text='\n'.join(eval(self.hints_map['New Codes Output and BID:'])))
 
         if is_old_file:
@@ -972,7 +979,9 @@ class CodeUpdaterInterface:
             self.code_cave = None
 
     def allocate_cave(self, cave_size: int):
-        if self.code_cave[1] - self.code_cave[0] < cave_size * 4:
+        new_cave_addr = self.code_cave[0] + cave_size * 4
+        if new_cave_addr > self.code_cave[1]:
+            self.logger.warning(f'code cave addr {hex(new_cave_addr)} out of range 0x{self.new_main_file.codeCaveStart.hex()} ~ 0x{self.new_main_file.codeCaveEnd.hex()}')
             return None
         else:
             return self.code_cave[0]
@@ -1564,7 +1573,8 @@ class CodeUpdaterInterface:
             try:
                 self.code = CodeStruct(self.input_cheats_text_in(), self.globalInfo, (self.old_main_file, self.new_main_file), self.force_ARM64.get())
                 self.input_cheats_text_out(self.code.get_normalized_code())
-                print(self.code.code_struct)
+                # print(self.code.code_struct)
+                self.logger.info(f'======== code_struct ========\n{pprint.pformat(self.code.code_struct, sort_dicts=False)}\n=============================')
                 messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['old cheats text ready'])))
             except Exception as e:
                 self.logger.exception(e)

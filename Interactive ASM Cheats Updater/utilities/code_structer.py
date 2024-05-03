@@ -140,6 +140,7 @@ class CodeStruct:
         has_content = False
         has_unknown = False
 
+        self.logger.info(f'======== raw_text ========\n{raw_text}\n==========================')
         for code in code_list_raw:
             code_chunk_list = re.split('\n', code)
             for code_chunk in code_chunk_list:

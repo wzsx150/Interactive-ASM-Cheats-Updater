@@ -66,6 +66,7 @@ class MainNSOStruct:
 
     def process_file(self):
         if not self.is_NSO_file():
+            messagebox.showerror(title=self.msgbox_title_map['Error'], message=generate_msg(self.msg_map['NOT NSO File']))
             raise MainNSOError(generate_msg(self.msg_map['NOT NSO File']))
         else:
             if self.is_Compressed():
