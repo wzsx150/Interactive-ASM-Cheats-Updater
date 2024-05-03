@@ -24,6 +24,7 @@ class MainNSOStruct:
         self.file_path = file_path
         self.logger = globalInfo.logger
         self.msg_map = globalInfo.msg_map
+        self.msgbox_title_map = globalInfo.msgbox_title_map
         self.back_path = globalInfo.back_path
         self.tool_path = globalInfo.tool_path
 
@@ -63,7 +64,7 @@ class MainNSOStruct:
         back_file_path = os.path.join(self.back_path, f'{file_name}_❀{int(time.time())}.bak')
         shutil.copyfile(self.file_path, back_file_path)
         if not os.path.exists(os.path.join(self.tool_path, 'nsnsotool.exe')):
-            messagebox.showerror(title='Error', message=generate_msg(self.msg_map['nsnsotool missing']))
+            messagebox.showerror(title=self.msgbox_title_map['Error'], message=generate_msg(self.msg_map['nsnsotool missing']))
             raise MainNSOError(MainNSOError(generate_msg(self.msg_map['nsnsotool missing'])))
 
         try:
@@ -76,7 +77,7 @@ class MainNSOStruct:
             if content is not None:
                 print(*content, sep="\n")
         except Exception as e:
-            messagebox.showerror(title='Error', message=generate_msg(self.msg_map['nsnsotool warning']))
+            messagebox.showerror(title=self.msgbox_title_map['Error'], message=generate_msg(self.msg_map['nsnsotool warning']))
             raise MainNSOError(MainNSOError(generate_msg(self.msg_map['nsnsotool warning'])))
         
         self.logger.info(generate_msg(self.msg_map['NSO file decompressed']))

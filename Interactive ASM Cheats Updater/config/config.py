@@ -277,6 +277,12 @@ localization = {
         "title": "Code Updater for Nintendo Switch ver 1.0.2",
         "wing_length_default": "[1, 1]",
         "extra_wing_length_default": "[2, 2]",
+        "msgbox_title_map":
+        {
+            "Info": "Info",
+            "Warning": "Warning",
+            "Error": "Error",
+        },
         "hints_map":
         {
             "Old Main File:": "Old Main File:",
@@ -370,6 +376,12 @@ localization = {
         "title": "金手指自动更新器 ver 1.0.2c",
         "wing_length_default": "[1, 1]",
         "extra_wing_length_default": "[2, 2]",
+        "msgbox_title_map":
+        {
+            "Info": "信息",
+            "Warning": "警告",
+            "Error": "错误",
+        },
         "hints_map":
         {
             "Old Main File:": "金手指对应Main：",

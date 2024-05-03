@@ -113,6 +113,7 @@ class PseudoStack:
 class CodeStruct:
     def __init__(self, raw_text: str, globalInfo, file_bundle, force_ASM64 = False) -> None:
         self.logger = globalInfo.logger
+        self.msgbox_title_map = globalInfo.msgbox_title_map
         self.msg_map = globalInfo.msg_map
         self.code_pattern = globalInfo.code_pattern
         self.old_main_file = file_bundle[0]
@@ -176,7 +177,7 @@ class CodeStruct:
         self.code_list = remove_inner_code_linebreak(self.code_list)  # Hints: title/code_part + \n + code_part
 
         if is_splited:
-            messagebox.showinfo(title='Info', message='\n'.join(eval(self.msg_map['Pre-process message'])))
+            messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['Pre-process message'])))
 
         for code in self.code_list:
             code_text += code

@@ -15,6 +15,7 @@ class GamePackage:
     def __init__(self, globalInfo):
         self.key_path = globalInfo.root_path
         self.msg_map = globalInfo.msg_map
+        self.msgbox_title_map = globalInfo.msgbox_title_map
         self.keys = self.get_keys()
 
     def get_keys(self):
@@ -23,7 +24,7 @@ class GamePackage:
         if not key_file.is_file():
             key_file = Path.home().joinpath('.switch', 'prod.keys')
         if not key_file.is_file():
-            messagebox.showwarning(title='Warning', message='\n'.join(eval(self.msg_map['request keys'])))
+            messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['request keys'])))
             raise GamePackageError('Keys not found!')
         with open(key_file, encoding="utf8") as f:
             for line in f.readlines():
@@ -74,7 +75,7 @@ class GamePackage:
                 if 'titlekek_%02x'%max(masterKeyRev-1, 0) not in self.keys:
                     if 'master_key_%02x'%max(masterKeyRev-1, 0) not in self.keys:
                         self.logger.warning('\n'.join(eval(self.msg_map['required master key version'])))
-                        messagebox.showwarning(title='Warning', message='\n'.join(eval(self.msg_map['required master key version'])))
+                        messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['required master key version'])))
                         return [None, None]
                     else:
                         title_kek_0x = self.decrypt_aes_abc(self.keys['titlekek_source'], self.keys['master_key_%02x'%max(masterKeyRev-1, 0)])
@@ -83,7 +84,7 @@ class GamePackage:
                     title_kek = AESECB(self.keys['titlekek_%02x'%max(masterKeyRev-1, 0)]).decrypt(titleKey)
             except:
                 self.logger.warning('\n'.join(eval(self.msg_map['required title key version'])))
-                messagebox.showwarning(title='Warning', message='\n'.join(eval(self.msg_map['required title key version'])))
+                messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['required title key version'])))
                 return [None, None]
             f.seek(0x1A, 1)
             title_id = '%016X'%int.from_bytes(f.read(0x8), 'big')
@@ -174,7 +175,7 @@ class GamePackage:
                                         raise GamePackageError('sdk NSO0 header error! %s'%NSO[:4])
             f.close()
         except:
-            messagebox.showerror(title='Error', message='\n'.join(eval(self.msg_map['.nso extraction failed'])))
+            messagebox.showerror(title=self.msgbox_title_map['Error'], message='\n'.join(eval(self.msg_map['.nso extraction failed'])))
     
     def generate_main_file(self, main_path, bin):
         fo = open(main_path, 'bw')

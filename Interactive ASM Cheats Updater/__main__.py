@@ -20,6 +20,7 @@ class GlobalInfo:  # Read-ONLY Property
         self.logger = Logger(root_path)
 
         self.title = localization[language]['title']
+        self.msgbox_title_map = localization[language]['msgbox_title_map']
         self.hints_map = localization[language]['hints_map']
         self.btn_map = localization[language]['btn_map']
         self.msg_map = localization[language]['msg_map']

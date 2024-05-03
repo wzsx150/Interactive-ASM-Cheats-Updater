@@ -243,6 +243,7 @@ class CodeUpdaterInterface:
         self.tool_path = globalInfo.tool_path
 
         self.hints_map = globalInfo.hints_map
+        self.msgbox_title_map = globalInfo.msgbox_title_map
         self.btn_map = globalInfo.btn_map
         self.msg_map = globalInfo.msg_map
         self.wing_length_default = globalInfo.wing_length_default
@@ -531,7 +532,7 @@ class CodeUpdaterInterface:
             return
         
         if Path(file_path).suffix.lower() in self.supported_package_type:
-            messagebox.showwarning(title='Warning', message='\n'.join(eval(self.msg_map['Unpack Warning'])))
+            messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['Unpack Warning'])))
             
             out_redir = Stdout_Redirect(self)  # pipeline redirect
             updated_file_path = self.gamePackage.get_main_file(file_path)
@@ -554,7 +555,7 @@ class CodeUpdaterInterface:
             self.output_cheats_script.config(text='\n'.join(eval(self.hints_map['New Codes Output and BID:'])))
 
         if is_old_file:
-            messagebox.showinfo(title='Info', message='\n'.join(eval(self.msg_map['BID message'])))
+            messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['BID message'])))
 
     def update_old_file_entry(self, msg: str):
         self.old_file_entry.config(state=NORMAL)
@@ -672,7 +673,7 @@ class CodeUpdaterInterface:
         elif wing_length_list is not None:
             wing_length = [int(wing_length_list.group(1)), int(wing_length_list.group(2))]
         else:
-            messagebox.showwarning(title='Warning', message='\n'.join(eval(self.msg_map['Wing length check message'])))
+            messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['Wing length check message'])))
             wing_length = eval(self.wing_length_default)
         
         wing_length_new = pattern_list.match(value_text)
@@ -700,7 +701,7 @@ class CodeUpdaterInterface:
             return [int(wing_length_list.group(1)), int(wing_length_list.group(2))]
         
         self.reset_wings_text()
-        messagebox.showwarning(title='Warning', message='\n'.join(eval(self.msg_map['Wing length check message'])))
+        messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['Wing length check message'])))
         return eval(self.wing_length_default)
 
     def fetch_extra_wings(self):
@@ -717,7 +718,7 @@ class CodeUpdaterInterface:
             return [int(wing_length_list.group(1)), int(wing_length_list.group(2))]
         
         self.reset_ASM_wings_text()
-        messagebox.showwarning(title='Warning', message='\n'.join(eval(self.msg_map['Extra wing length check message'])))
+        messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['Extra wing length check message'])))
         return eval(self.extra_wing_length_default)
 
     def old_ASM_text_out(self, msg: list, high_light_line: list):
@@ -1488,8 +1489,8 @@ class CodeUpdaterInterface:
                             )
                     process.communicate(commands.encode('utf-8'))
                 else:
-                    messagebox.showerror(title='Error', message='\n'.join(eval(self.msg_map['nsnsotool missing'])))
+                    messagebox.showerror(title=self.msgbox_title_map['Error'], message='\n'.join(eval(self.msg_map['nsnsotool missing'])))
 
             except Exception as e:
-                messagebox.showwarning(title='Warning', message='\n'.join(eval(self.msg_map['nsnsotool warning'])))
+                messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['nsnsotool warning'])))
                 self.logger.exception(e)  
