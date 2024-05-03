@@ -1367,6 +1367,7 @@ class CodeUpdaterInterface:
     def undo(self):
         if not self.check_previous_step():
             self.restart()
+            return
         
         if 'processed' in self.code.code_struct[str(self.cur_position[0])][str(self.cur_position[1])]:
             self.code.code_struct[str(self.cur_position[0])][str(self.cur_position[1])].pop('processed')
