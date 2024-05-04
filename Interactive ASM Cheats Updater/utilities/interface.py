@@ -600,7 +600,7 @@ class CodeUpdaterInterface:
         self.logger.warning('======== Force Exit ========\n')
         self.progress_window.destroy()
         self.mainWin.destroy()
-        timer.sleep(2)
+        time.sleep(2)
         sys.exit()
 
     def do_action(self, action):
