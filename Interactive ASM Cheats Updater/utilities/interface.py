@@ -715,7 +715,7 @@ class CodeUpdaterInterface:
     def input_cheats_text_highlight(self, startline: int, endline: int):
         self.input_cheats_text.tag_remove("highlight", "1.0", "end")
         self.input_cheats_text.tag_add('highlight', f'{startline}.0', f'{endline}.end+1c')
-        self.input_cheats_text.see(f'{endline}.0')
+        self.input_cheats_text.see(f'{endline + 3}.0')
 
     def current_cheats_text_out(self, msg: str, need_clear):
         self.current_cheats_text.config(state=NORMAL)
