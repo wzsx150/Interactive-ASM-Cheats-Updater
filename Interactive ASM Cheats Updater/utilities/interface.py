@@ -334,7 +334,7 @@ class CodeUpdaterInterface:
         self.old_file_entry = tkinter.Entry(self.old_load_file_frame, width=60, justify=CENTER, state=DISABLED)
         self.old_file_entry.pack(expand='yes', fill='both', anchor='center', side='left', padx=5, pady=5)
 
-        self.btn_load_old_file = tkinter.Button(self.old_load_file_frame, height=0, text=self.btn_map['Load Old'], relief=RAISED, command=self.load_old_file)
+        self.btn_load_old_file = tkinter.Button(self.old_load_file_frame, height=0, text=self.btn_map['Load Old'], relief=RAISED, command=lambda: self.do_action(self.load_old_file))
         self.btn_load_old_file.pack(expand='yes', fill='both', anchor='e', side='left', padx=5, pady=5)
 
         # New load file frame
@@ -347,7 +347,7 @@ class CodeUpdaterInterface:
         self.new_file_entry = tkinter.Entry(self.new_load_file_frame, width=60, justify=CENTER, state=DISABLED)
         self.new_file_entry.pack(expand='yes', fill='both', anchor='center', side='left', padx=5, pady=5)
 
-        self.btn_load_new_file = tkinter.Button(self.new_load_file_frame, height=0, text=self.btn_map['Load New'], relief=RAISED, command=self.load_new_file)
+        self.btn_load_new_file = tkinter.Button(self.new_load_file_frame, height=0, text=self.btn_map['Load New'], relief=RAISED, command=lambda: self.do_action(self.load_new_file))
         self.btn_load_new_file.pack(expand='yes', fill='both', anchor='e', side='left', padx=5, pady=5)
 
         # Debug checkbox
@@ -402,7 +402,7 @@ class CodeUpdaterInterface:
         self.wings_text.pack(anchor='e', fill='x', side='left', padx=5, pady=5)
         self.wings_text.delete(0, END)
         self.wings_text.insert(0, self.wing_length_default)
-        self.btn_regenerate = tkinter.Button(self.middle_cheats_wings_frame, text=self.btn_map['Regenerate'], width=12, command=self.regenerate)
+        self.btn_regenerate = tkinter.Button(self.middle_cheats_wings_frame, text=self.btn_map['Regenerate'], width=12, command=lambda: self.do_action(self.regenerate))
         self.btn_regenerate.pack(padx=5, pady=5)
         self.btn_regenerate.config(state=DISABLED)
 
@@ -410,13 +410,13 @@ class CodeUpdaterInterface:
         self.middle_cheats_button_frame = tkinter.Frame(self.middle_cheats_frame)
         self.middle_cheats_button_frame.pack(expand='yes', anchor='center', side='top', padx=5, pady=5)
         self.middle_cheats_button_frame.columnconfigure(0, weight=1)
-        self.btn_generate = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Start'], width=10, command=self.do_generate)
+        self.btn_generate = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Start'], width=10, command=lambda: self.do_action(self.generate))
         self.btn_generate.grid(row=0, column=0, sticky="nsew")
         self.btn_generate.config(state=DISABLED)
-        self.btn_skip = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Skip'], width=10, command=self.do_skip)
+        self.btn_skip = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Skip'], width=10, command=lambda: self.do_action(self.skip))
         self.btn_skip.grid(row=0, column=1, sticky="nsew")
         self.btn_skip.config(state=DISABLED)
-        self.btn_undo = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Undo'], width=10, command=self.do_undo)
+        self.btn_undo = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Undo'], width=10, command=lambda: self.do_action(self.undo))
         self.btn_undo.grid(row=0, column=2, sticky="nsew")
         self.btn_undo.config(state=DISABLED)
         self.btn_restart = tkinter.Button(self.middle_cheats_button_frame, text=self.btn_map['Restart'], width=10, command=self.restart)
@@ -461,7 +461,7 @@ class CodeUpdaterInterface:
         self.ASM_wings_text.pack(anchor='e', fill='x', side='left', padx=5, pady=5)
         self.ASM_wings_text.delete(0, END)
         self.ASM_wings_text.insert(0, self.extra_wing_length_default)
-        self.btn_update = tkinter.Button(self.middle_ASM_wings_frame, text=self.btn_map['Update'], width=12, command=self.update)
+        self.btn_update = tkinter.Button(self.middle_ASM_wings_frame, text=self.btn_map['Update'], width=12, command=lambda: self.do_action(self.update))
         self.btn_update.pack(padx=5, pady=5)
         self.btn_update.config(state=DISABLED)
 
@@ -601,6 +601,14 @@ class CodeUpdaterInterface:
         self.mainWin.destroy()
         timer.sleep(2)
         sys.exit()
+
+    def do_action(self, action):
+        self.process_window_on()
+        Thread(target=lambda: self.do_action_win(action)).start()
+
+    def do_action_win(self, action):
+        action()
+        self.mainWin.after(0, self.process_window_off)
 
     # right-click functions
     def selectall(self, event=None):
@@ -1560,14 +1568,6 @@ class CodeUpdaterInterface:
         
         return False
 
-    def do_generate(self):
-        self.process_window_on()
-        Thread(target=self.do_generate_win).start()
-
-    def do_generate_win(self):
-        self.generate()
-        self.mainWin.after(0, self.process_window_off)
-
     def generate(self):
         if not self.is_initialized:
             try:
@@ -1603,14 +1603,6 @@ class CodeUpdaterInterface:
             return
         self.analysis_code(self.cur_position)
 
-    def do_skip(self):
-        self.process_window_on()
-        Thread(target=self.do_skip_win).start()
-
-    def do_skip_win(self):
-        self.skip()
-        self.mainWin.after(0, self.process_window_off)
-
     def skip(self):
         if self.is_ended:
             self.input_cheats_text.tag_remove("highlight", "1.0", "end")
@@ -1625,14 +1617,6 @@ class CodeUpdaterInterface:
             self.is_ended = True
             return
         self.analysis_code(self.cur_position)
-
-    def do_undo(self):
-        self.process_window_on()
-        Thread(target=self.do_undo_win).start()
-
-    def do_undo_win(self):
-        self.undo()
-        self.mainWin.after(0, self.process_window_off)
 
     def undo(self):
         if not self.check_previous_step():
