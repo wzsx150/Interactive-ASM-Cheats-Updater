@@ -569,6 +569,7 @@ class CodeUpdaterInterface:
         self.progress_window = tkinter.Toplevel(self.mainWin)
         self.progress_window.title(self.msgbox_title_map['Info'])
         self.progress_window.overrideredirect(True)  # Hints: no title bar
+        self.progress_window.configure(borderwidth=2, relief="raised")
 
         window_width = 250
         window_height = 150
