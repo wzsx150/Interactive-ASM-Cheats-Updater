@@ -751,10 +751,11 @@ class CodeUpdaterInterface:
         self.log_text.config(state=NORMAL)
         if need_clear:
             self.log_text.delete(0.1, END)
+        timestamp = time.strftime("[%Y-%m-%d %H:%M:%S]", time.localtime())
         if len(msg) >= 1 and msg[-1] == '\n':
-            self.log_text.insert('insert', f'[{time.asctime(time.localtime(time.time()))}] {msg}\n')
+            self.log_text.insert('insert', f'{timestamp}  {msg}\n')
         else:
-            self.log_text.insert('insert', f'[{time.asctime(time.localtime(time.time()))}] {msg}\n\n')
+            self.log_text.insert('insert', f'{timestamp}  {msg}\n\n')
         self.log_text.config(state=DISABLED)
         if not need_clear:
             self.log_text.see(END)
