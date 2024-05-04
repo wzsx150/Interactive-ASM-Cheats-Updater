@@ -421,13 +421,14 @@ localization = {
             "old cheats text ready": """['Old codes normalization process is complete. you can now start the generation process.']""",
             "code processing complete": """['All code processing is complete']""",
 
-            "NOT NSO File": """['Error parsing the file, it may not be a valid NSO file.']""",
-            "NSO file decompressed": """['NSO file decompressed.']""",
+            "NOT File": """['File reading failed, please check the file path and permissions.']""",
+            "NOT NSO File": """['The "main" file parsing failed, it may not be a valid NSO file.']""",
+            "NSO file decompression failed": """['The "main" file decompression failed.']""",
+            "NSO file decompressed": """['The "main" file decompressed.']""",
+            "NSO file compression failed": """['The "main" file compression failed.']""",
+            "NSO file compressed": """['The "main" file compressed.']""",
             "BID message": """[f'BID of the old codes should be "{self.old_main_file.ModuleId.upper()}".']""",
-            "Pre-process message": """['080X0000 codes have been splited into 04 atom codes.']""",
-
-            "nsnsotool warning": """['nsnsotool failed working']""",
-            "nsnsotool missing": """['tools/nsnsotool.exe missing']""",
+            "Pre-process message 0x08": """['080X0000 codes have been splited into 04 atom codes.']""",
 
             "Wing length check message": """['Wing length must be int or list, eg. "20", "[15,10]". Setting to default value.']""",
             "Extra wing length check message": """['Extra wing length must be int or list, eg. "20", "[15,10]". Setting to default value.']""",
@@ -464,6 +465,7 @@ localization = {
             "Cancel": "Cancel",
             "NSO File": "NSO File",
             "NSO File Saved": "NSO File Saved",
+            "File save failed": "File save failed",
         }
     },
     "loc_CN":
@@ -526,7 +528,7 @@ localization = {
             "request keys": """['本程序根目录下未找到 "keys.txt" 文件，无法自动解包游戏。']""",
             "required title key version": """[f'"keys.txt"中未找到"titlekek_{hex(masterKeyRev-1)[2:].zfill(2)}"!']""",
             "required master key version": """[f'"keys.txt"中未找到"master_key_{hex(masterKeyRev-1)[2:].zfill(2)}"!']""",
-            ".nso extraction failed": """['从游戏中提取 "main" 文件失败']""",
+            ".nso extraction failed": """['从游戏包中提取 "main" 文件失败']""",
             "Unpack Warning": """[f'解包 "{Path(file_path).suffix}" 文件需要一段时间，请耐心等待']""",
             "Extract NCA": """['从游戏包提取NCA文件中...']""",
             "Extract ticket": """['从.tik获取相关信息中...']""",
@@ -535,13 +537,14 @@ localization = {
             "old cheats text ready": """['已完成旧金手指规范化处理，可以开始生成操作']""",
             "code processing complete": """['金手指全部处理完毕']""",
 
-            "NOT NSO File": """['解析文件出错，可能不是一个正常的NSO文件']""",
-            "NSO file decompressed": """['已自动解压main文件']""",
+            "NOT File": """['文件读取失败，请检查文件路径和权限']""",
+            "NOT NSO File": """['"main"文件解析出错，它可能不是一个正常的NSO文件']""",
+            "NSO file decompression failed": """['"main"文件解压失败']""",
+            "NSO file decompressed": """['"main"文件解压完成']""",
+            "NSO file compression failed": """['"main"文件压缩失败']""",
+            "NSO file compressed": """['"main"文件压缩完成']""",
             "BID message": """[f'旧金手指文件名（BID）必须为 "{self.old_main_file.ModuleId.upper()}"']""",
-            "Pre-process message": """['080X0000金手指代码已自动缩减为04原子代码']""",
-
-            "nsnsotool warning": """['nsnsotool未正常工作']""",
-            "nsnsotool missing": """['tools/nsnsotool.exe文件丢失']""",
+            "Pre-process message 0x08": """['080X0000金手指代码已自动缩减为04原子代码']""",
 
             "Wing length check message": """['翼展宽度必须为整数，如："20"，"[15,10]"']""",
             "Extra wing length check message": """['额外翼展宽度必须为整数，如："20"，"[15,10]"']""",
@@ -578,6 +581,7 @@ localization = {
             "Cancel": "取消",
             "NSO File": "NSO文件",
             "NSO File Saved": "NSO文件已保存",
+            "File save failed": "文件保存失败",
         }
     }
 }

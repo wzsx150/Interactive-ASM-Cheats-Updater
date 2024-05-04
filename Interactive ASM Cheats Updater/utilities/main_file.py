@@ -20,7 +20,7 @@ def bytes_to_int(bytearray):
 def get_pages_size(code_size):
     return ((code_size & 0xFFFFF000) + 0x1000)
 
-generate_msg = lambda x:'\n'.join(eval(x))
+generate_msg = lambda x:'\n'.join(eval(x))  # just for static characters
 
 
 class MainNSOStruct:
@@ -29,6 +29,7 @@ class MainNSOStruct:
         self.globalInfo = globalInfo
         self.logger = globalInfo.logger
         self.msg_map = globalInfo.msg_map
+        self.str_map = globalInfo.str_map
         self.msgbox_title_map = globalInfo.msgbox_title_map
 
         self.Magic = ''
@@ -74,7 +75,8 @@ class MainNSOStruct:
             self.get_struct_from_file()
             self.get_mainfunc_file()
             if len(self.Flags) == 0 or (int.from_bytes(self.Flags, 'little') & 0b111):
-                raise MainNSOError(generate_msg(self.msg_map['nsnsotool warning']))
+                messagebox.showerror(title=self.msgbox_title_map['Error'], message=generate_msg(self.msg_map['NSO file decompression failed']))
+                raise MainNSOError(generate_msg(self.msg_map['NSO file decompression failed']))
             return True
 
     def decompress(self):
@@ -85,7 +87,8 @@ class MainNSOStruct:
                 dec_file_path = org_file.generate_dec_path(self.file_path)
                 org_file.self_decompress()
         except Exception as e:
-            raise MainNSOError(f'The main file failed to decompress: {self.file_path}')
+            messagebox.showerror(title=self.msgbox_title_map['Error'], message=generate_msg(self.msg_map['NSO file decompression failed']))
+            raise MainNSOError(generate_msg(self.msg_map['NSO file decompression failed']))
 
         self.logger.info(generate_msg(self.msg_map['NSO file decompressed']))
 

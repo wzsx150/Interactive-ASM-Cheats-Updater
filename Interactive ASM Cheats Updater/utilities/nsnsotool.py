@@ -12,6 +12,12 @@ import pprint
 
 import lz4.block
 
+from tkinter import messagebox
+from utilities.exception import NSOtoolError
+
+
+generate_msg = lambda x:'\n'.join(eval(x))  # just for static characters
+
 
 class NSOfile:
     def __init__(self, file_path: str, globalInfo) -> None:
@@ -21,6 +27,7 @@ class NSOfile:
 
         self.logger = globalInfo.logger
         self.msg_map = globalInfo.msg_map
+        self.str_map = globalInfo.str_map
         self.msgbox_title_map = globalInfo.msgbox_title_map
         
         # 0x100 bytes
@@ -104,7 +111,8 @@ class NSOfile:
 
     def get_struct_from_file(self):
         if not self.is_NSO_file():
-            raise ValueError('Error parsing the file, it may not be a valid NSO file.')
+            messagebox.showerror(title=self.msgbox_title_map['Error'], message=generate_msg(self.msg_map['NOT NSO File']))
+            raise NSOtoolError(generate_msg(self.msg_map['NOT NSO File']))
         
         buf = bytearray(os.path.getsize(self.file_path))
         with open(self.file_path, 'rb') as fp:
@@ -143,7 +151,8 @@ class NSOfile:
 
     def check_file_exist(self, file_path: str):
         if not os.path.isfile(file_path):
-            raise ValueError(f'Unable to find the file: {file_path}')
+            messagebox.showerror(title=self.msgbox_title_map['Error'], message=generate_msg(self.msg_map['NOT File']))
+            raise NSOtoolError(generate_msg(self.msg_map['NOT File']))
         return True
 
     def generate_tmp_path(self, input_path: str):

@@ -17,7 +17,7 @@ from utilities.main_file import *
 from utilities.nsnsotool import NSOfile
 from utilities.code_structer import CodeStruct, PseudoStack
 from utilities.bytes_process import *
-from utilities.exception import GamePackageError
+from utilities.exception import *
 from utilities.logger import *
 
 from pathlib import Path
@@ -27,6 +27,8 @@ import time
 
 def bytes_to_int(bytearray):
     return int.from_bytes(bytearray, byteorder='big', signed=False)
+
+generate_msg = lambda x:'\n'.join(eval(x))  # just for static characters
 
 
 class Stdout_Redirect:
@@ -581,7 +583,7 @@ class CodeUpdaterInterface:
         self.progress_window.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
         self.progress_window.grab_set()
 
-        self.progress_label = tkinter.Label(self.progress_window, text='\n'.join(eval(self.msg_map['processing'])))
+        self.progress_label = tkinter.Label(self.progress_window, text=generate_msg(self.msg_map['processing']))
         self.progress_label.pack(pady=30)
         self.btn_exit = tkinter.Button(self.progress_window, text=self.btn_map['Force Exit'], command=self.force_exit_program, state=DISABLED)
         self.btn_exit.pack(pady=5)
@@ -637,26 +639,32 @@ class CodeUpdaterInterface:
             return
         
         if Path(file_path).suffix.lower() in self.supported_package_type:
+            self.logger.warning('\n'.join(eval(self.msg_map['Unpack Warning'])))
             messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['Unpack Warning'])))
             
             out_redir = Stdout_Redirect(self)  # pipeline redirect
             updated_file_path = self.gamePackage.get_main_file(file_path)
             out_redir.restore_std()
             if updated_file_path is None:
-                raise GamePackageError('\n'.join(eval(self.msg_map['.nso extraction failed'])))
+                raise GamePackageError(generate_msg(self.msg_map['.nso extraction failed']))
             if is_old_file:
                 self.update_old_file_entry(updated_file_path)
             else:
                 self.update_new_file_entry(updated_file_path)
             file_path = updated_file_path
         
-        org_file = NSOfile(file_path, self.globalInfo)
-        org_file.process_file()
-        if org_file.is_Compressed():
-            dec_file_path = org_file.generate_dec_path(file_path)
-            org_file.decompress(dec_file_path)
-            file_path = dec_file_path
-            self.logger.info(generate_msg(self.msg_map['NSO file decompressed']))
+        try:
+            org_file = NSOfile(file_path, self.globalInfo)
+            org_file.process_file()
+            
+            if org_file.is_Compressed():
+                dec_file_path = org_file.generate_dec_path(file_path)
+                org_file.decompress(dec_file_path)
+                file_path = dec_file_path
+                self.logger.info(generate_msg(self.msg_map['NSO file decompressed']))
+        except Exception as e:
+            messagebox.showerror(title=self.msgbox_title_map['Error'], message=generate_msg(self.msg_map['NSO file decompression failed']))
+            raise NSOtoolError(generate_msg(self.msg_map['NSO file decompression failed']))
 
         if is_old_file:
             self.old_main_file = MainNSOStruct(file_path, self.globalInfo)
@@ -795,7 +803,8 @@ class CodeUpdaterInterface:
         elif wing_length_list is not None:
             wing_length = [int(wing_length_list.group(1)), int(wing_length_list.group(2))]
         else:
-            messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['Wing length check message'])))
+            # self.logger.warning('\n'.join(eval(self.msg_map['Wing length check message'])))
+            messagebox.showwarning(title=self.msgbox_title_map['Warning'], message=(self.msg_map['Wing length check message']))
             wing_length = eval(self.wing_length_default)
         
         wing_length_new = pattern_list.match(value_text)
@@ -823,7 +832,8 @@ class CodeUpdaterInterface:
             return [int(wing_length_list.group(1)), int(wing_length_list.group(2))]
         
         self.reset_wings_text()
-        messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['Wing length check message'])))
+        # self.logger.warning('\n'.join(eval(self.msg_map['Wing length check message'])))
+        messagebox.showwarning(title=self.msgbox_title_map['Warning'], message=generate_msg(self.msg_map['Wing length check message']))
         return eval(self.wing_length_default)
 
     def fetch_extra_wings(self):
@@ -840,7 +850,8 @@ class CodeUpdaterInterface:
             return [int(wing_length_list.group(1)), int(wing_length_list.group(2))]
         
         self.reset_ASM_wings_text()
-        messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['Extra wing length check message'])))
+        # self.logger.warning('\n'.join(eval(self.msg_map['Extra wing length check message'])))
+        messagebox.showwarning(title=self.msgbox_title_map['Warning'], message=generate_msg(self.msg_map['Extra wing length check message']))
         return eval(self.extra_wing_length_default)
 
     def old_ASM_text_out(self, msg: list, high_light_line: list):
@@ -1109,9 +1120,9 @@ class CodeUpdaterInterface:
                 asm_type = self.str_map['asm_type_r']
 
                 if addr is None:
-                    gen_msg = '\n'.join(eval(self.msg_map['discard_or_regen']))
+                    gen_msg = generate_msg(self.msg_map['discard_or_regen'])
                 else:
-                    gen_msg = '\n'.join(eval(self.msg_map['flat_generate']))
+                    gen_msg = generate_msg(self.msg_map['flat_generate'])
 
                 if self.code.code_struct[str(position[0])]['info']['is_value_only']:
                     gen_msg = (  gen_msg
@@ -1197,30 +1208,30 @@ class CodeUpdaterInterface:
                             + extra_addr_msg)
 
                 if addr is None or addr_branch is None:
-                    gen_msg = '\n'.join(eval(self.msg_map['discard_or_regen']))
+                    gen_msg = generate_msg(self.msg_map['discard_or_regen'])
                 elif isinstance(addr, int) and isinstance(addr_branch, int):
-                    gen_msg = '\n'.join(eval(self.msg_map['flat_generate']))
+                    gen_msg = generate_msg(self.msg_map['flat_generate'])
                 else:
-                    gen_msg = '\n'.join(eval(self.msg_map['choose_or_regen']))
+                    gen_msg = generate_msg(self.msg_map['choose_or_regen'])
                 
                 gen_msg = (  gen_msg
                            + '\n\n'
-                           + '\n'.join(eval(self.msg_map['wing_length_warn'])))   
+                           + '\n'.join(eval(self.msg_map['wing_length_warn'])))
 
             else:
                 asm_type = self.str_map['asm_type_r']
 
                 if addr is None:
-                    gen_msg = '\n'.join(eval(self.msg_map['discard_or_regen']))
+                    gen_msg = generate_msg(self.msg_map['discard_or_regen'])
                 elif isinstance(addr, int):
-                    gen_msg = '\n'.join(eval(self.msg_map['flat_generate']))
+                    gen_msg = generate_msg(self.msg_map['flat_generate'])
                 else:
-                    gen_msg = '\n'.join(eval(self.msg_map['choose_or_regen']))   
+                    gen_msg = generate_msg(self.msg_map['choose_or_regen'])
 
                 if self.code.code_struct[str(position[0])]['info']['is_value_only']:
                     gen_msg = (  gen_msg
                                + '\n\n'
-                               + '\n'.join(eval(self.msg_map['value_warn'])))   
+                               + '\n'.join(eval(self.msg_map['value_warn'])))
 
             log_text_msg = (  '\n'
                             + '\n'.join(eval(self.msg_map['asm_code']))
@@ -1576,7 +1587,8 @@ class CodeUpdaterInterface:
                 self.input_cheats_text_out(self.code.get_normalized_code())
                 # print(self.code.code_struct)
                 self.logger.info(f'======== code_struct ========\n{pprint.pformat(self.code.code_struct, sort_dicts=False)}\n=============================')
-                messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['old cheats text ready'])))
+                self.logger.info(generate_msg(self.msg_map['old cheats text ready']))
+                messagebox.showinfo(title=self.msgbox_title_map['Info'], message=generate_msg(self.msg_map['old cheats text ready']))
             except Exception as e:
                 self.logger.exception(e)
                 return
@@ -1592,7 +1604,8 @@ class CodeUpdaterInterface:
         
         if self.is_ended:
             self.input_cheats_text.tag_remove("highlight", "1.0", "end")
-            messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['code processing complete'])))
+            self.logger.info(generate_msg(self.msg_map['code processing complete']))
+            messagebox.showinfo(title=self.msgbox_title_map['Info'], message=generate_msg(self.msg_map['code processing complete']))
             return
 
         self.generate_output(self.cur_position, 'generate')
@@ -1607,7 +1620,8 @@ class CodeUpdaterInterface:
     def skip(self):
         if self.is_ended:
             self.input_cheats_text.tag_remove("highlight", "1.0", "end")
-            messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['code processing complete'])))
+            self.logger.info(generate_msg(self.msg_map['code processing complete']))
+            messagebox.showinfo(title=self.msgbox_title_map['Info'], message=generate_msg(self.msg_map['code processing complete']))
             return
         
         self.generate_output(self.cur_position, 'skip')
@@ -1691,11 +1705,18 @@ class CodeUpdaterInterface:
             index = index - 1
         file_text = file_text[:remove_index]
 
-        with open(file = file_path, mode = 'a+', encoding = 'utf-8') as file:
-            file.seek(0)
-            file.truncate()
-            file.write(file_text)
-            messagebox.showinfo(title=self.msgbox_title_map['Info'], message=self.str_map['Cheat Code Saved'])
+        try:
+            with open(file = file_path, mode = 'a+', encoding = 'utf-8') as file:
+                file.seek(0)
+                file.truncate()
+                file.write(file_text)
+        except Exception as e:
+            self.logger.info(self.str_map['File save failed'])
+            self.logger.exception(e)
+            messagebox.showerror(title=self.msgbox_title_map['Error'], message=self.str_map['File save failed'])
+            return
+        self.logger.info(self.str_map['Cheat Code Saved'])
+        messagebox.showinfo(title=self.msgbox_title_map['Info'], message=self.str_map['Cheat Code Saved'])
 
     def gen_bytes_content(self, code_body: list):
         bytes_content = bytearray()
@@ -1735,16 +1756,21 @@ class CodeUpdaterInterface:
                 self.new_main_file.modify(code_chunk['processed']['allocated_addr'], bytes_content, in_code_cave = code_chunk['contents']['in_code_cave'])
 
         if file_path != '':
-            with open(file = file_path, mode = 'wb') as file:
-                file.seek(0)
-                file.truncate()
-                file.write(self.new_main_file.NSORaw4Mod)
-            
             try:
+                with open(file = file_path, mode = 'wb') as file:
+                    file.seek(0)
+                    file.truncate()
+                    file.write(self.new_main_file.NSORaw4Mod)
+                
                 save_file = NSOfile(file_path, self.globalInfo)
                 save_file.process_file()
                 save_file.self_compress()
-                messagebox.showinfo(title=self.msgbox_title_map['Info'], message=self.str_map['NSO File Saved'])
+                self.logger.info(generate_msg(self.msg_map['NSO file compressed']))
             except Exception as e:
-                messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['nsnsotool warning'])))
-                self.logger.exception(e)  
+                self.logger.info(self.str_map['File save failed'])
+                self.logger.exception(e)
+                messagebox.showerror(title=self.msgbox_title_map['Error'], message=self.str_map['File save failed'])
+                return
+            self.logger.info(self.str_map['NSO File Saved'])
+            messagebox.showinfo(title=self.msgbox_title_map['Info'], message=self.str_map['NSO File Saved'])
+            

@@ -3,7 +3,9 @@ from tkinter import messagebox
 from capstone import *
 from keystone import *
 
-    
+
+generate_msg = lambda x:'\n'.join(eval(x))  # just for static characters
+
 def create_one_msg(msg: str):
     return msg + '\n'
 
@@ -115,6 +117,7 @@ class CodeStruct:
         self.logger = globalInfo.logger
         self.msgbox_title_map = globalInfo.msgbox_title_map
         self.msg_map = globalInfo.msg_map
+        self.str_map = globalInfo.str_map
         self.code_pattern = globalInfo.code_pattern
         self.old_main_file = file_bundle[0]
         self.new_main_file = file_bundle[1]
@@ -178,7 +181,8 @@ class CodeStruct:
         self.code_list = remove_inner_code_linebreak(self.code_list)  # Hints: title/code_part + \n + code_part
 
         if is_splited:
-            messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['Pre-process message'])))
+            self.logger.info(generate_msg(self.msg_map['Pre-process message 0x08']))
+            messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['Pre-process message 0x08'])))
 
         for code in self.code_list:
             code_text += code
