@@ -1597,15 +1597,16 @@ class CodeUpdaterInterface:
                 self.code = CodeStruct(self.input_cheats_text_in(), self.globalInfo, (self.old_main_file, self.new_main_file), self.force_ARM64.get())
                 self.input_cheats_text_out(self.code.get_normalized_code())
                 # print(self.code.code_struct)
-                self.logger.info(f'======== code_struct ========\n{pprint.pformat(self.code.code_struct, sort_dicts=False)}\n=============================')
-                self.logger.info(generate_msg(self.msg_map['old cheats text ready']))
-                messagebox.showinfo(title=self.msgbox_title_map['Info'], message=generate_msg(self.msg_map['old cheats text ready']))
             except Exception as e:
                 self.logger.exception(e)
                 return
             
             if self.code.code_struct == {}:
                 return
+            
+            self.logger.info(f'======== code_struct ========\n{pprint.pformat(self.code.code_struct, sort_dicts=False)}\n=============================')
+            self.logger.info(generate_msg(self.msg_map['old cheats text ready']))
+            messagebox.showinfo(title=self.msgbox_title_map['Info'], message=generate_msg(self.msg_map['old cheats text ready']))
             
             self.reset_param(is_restart = False)
             self.analysis_code(self.cur_position)
