@@ -615,7 +615,9 @@ class CodeUpdaterInterface:
 
     def do_action(self, action):
         self.process_window_on()
-        Thread(target=lambda: self.do_action_win(action)).start()
+        thread_action = Thread(target=lambda: self.do_action_win(action))
+        thread_action.daemon = True
+        thread_action.start()
 
     def do_action_win(self, action):
         action()
