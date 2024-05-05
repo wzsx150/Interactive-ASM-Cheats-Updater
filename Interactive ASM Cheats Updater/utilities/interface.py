@@ -23,6 +23,7 @@ from utilities.logger import *
 from pathlib import Path
 import pprint
 import time
+import tempfile
 
 
 def bytes_to_int(bytearray):
@@ -315,10 +316,10 @@ class CodeUpdaterInterface:
         self.mainWin = tkinter.Tk()
         self.mainWin.title(globalInfo.title)
 
-        self.generate_icon('xcw.ico', xcw_ico)
-        self.mainWin.iconbitmap("xcw.ico")
+        temp_icon_path = self.generate_tmp_icon(xcw_ico)
+        self.mainWin.iconbitmap(temp_icon_path)
         self.mainWin.geometry('1400x800')
-        os.remove("xcw.ico")
+        os.remove(temp_icon_path)
 
         default_font = tkFont.nametofont("TkFixedFont")
 
@@ -566,6 +567,13 @@ class CodeUpdaterInterface:
         image = open(pic_name, 'wb')
         image.write(base64.b64decode(pic_base64))
         image.close()
+
+    def generate_tmp_icon(self, pic_base64):
+        temp_icon_path = None
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.ico') as temp_icon:
+            temp_icon.write(base64.b64decode(pic_base64))
+            temp_icon_path = temp_icon.name
+        return temp_icon_path
 
     def process_window_on(self, running=None):
         self.progress_window = tkinter.Toplevel(self.mainWin)
