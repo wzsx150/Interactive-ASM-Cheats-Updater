@@ -697,12 +697,16 @@ class CodeUpdaterInterface:
         self.old_file_entry.delete(0, END)
         self.old_file_entry.insert('insert', msg)
         self.old_file_entry.config(state=DISABLED)
-    
+        if msg == '':
+            self.input_cheats_script.config(text=self.hints_map['Input Old Codes:'])
+
     def update_new_file_entry(self, msg: str):
         self.new_file_entry.config(state=NORMAL)
         self.new_file_entry.delete(0, END)
         self.new_file_entry.insert('insert', msg)
         self.new_file_entry.config(state=DISABLED)
+        if msg == '':
+            self.output_cheats_script.config(text=self.hints_map['New Codes Output:'])
 
     def load_old_file(self):
         file_path = filedialog.askopenfilename(title=self.hints_map['Load Old Main NSO File'], filetypes=[('All Files', '*')])
