@@ -898,21 +898,19 @@ class CodeUpdaterInterface:
 
     def update_middle_ASM_output(self, midASMDataContainer):
         self.btn_update.config(state=NORMAL)
-        self.btn_prev_addr.config(state=NORMAL)
-        self.btn_next_addr.config(state=NORMAL)
-        self.branch_checkbox.config(state=NORMAL)
-
-        if midASMDataContainer.branch_target_size == 0:
-            self.branch_checkbox.config(state=DISABLED)
+        self.btn_prev_addr.config(state=DISABLED)
+        self.btn_next_addr.config(state=DISABLED)
+        self.branch_checkbox.config(state=DISABLED)
 
         if midASMDataContainer.branch_addr_size == 0:
             midASMDataContainer.target_on()
             self.is_check_branch.set(True)
-            self.branch_checkbox.config(state=DISABLED)
+        elif midASMDataContainer.branch_target_size > 0:
+            self.branch_checkbox.config(state=NORMAL)
 
-        if midASMDataContainer.branch_target_size == 1 or midASMDataContainer.branch_addr_size == 1:
-            self.btn_prev_addr.config(state=DISABLED)
-            self.btn_next_addr.config(state=DISABLED)
+        if midASMDataContainer.branch_target_size > 1 or midASMDataContainer.branch_addr_size > 1:
+            self.btn_prev_addr.config(state=NORMAL)
+            self.btn_next_addr.config(state=NORMAL)
 
         [old_ASM, old_highlight] = midASMDataContainer.get_msg_bundle(is_old_file = True)
         self.old_ASM_text_out(old_ASM, old_highlight)
