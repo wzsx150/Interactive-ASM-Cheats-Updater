@@ -610,7 +610,9 @@ class CodeStruct:
             for i in Disassembler.disasm(code_bytes, code_addr):
                 can_be_disassembled = True
 
-                if i.mnemonic == 'bl' or i.mnemonic == 'b' or ('b.' in i.mnemonic) or (i.mnemonic == 'adr' and '#' in i.op_str):
+                if (i.mnemonic == 'bl' or i.mnemonic == 'b' or ('b.' in i.mnemonic) or (i.mnemonic == 'adr' and '#' in i.op_str)
+                    or i.mnemonic == 'cbz' or i.mnemonic == 'cbnz'
+                    or i.mnemonic == 'tbz' or i.mnemonic == 'tbnz'):
                     is_branch = True
                     branch_to_cave = False
                     branch_to_other = None
@@ -620,6 +622,10 @@ class CodeStruct:
                         [extra_op, branch_addr] = i.op_str.split('#')
                         branch_addr = int(branch_addr, 16)
                         branch_type += ' ' + extra_op
+                    elif i.mnemonic == 'cbz' or i.mnemonic == 'cbnz' or i.mnemonic == 'tbz' or i.mnemonic == 'tbnz':
+                        left_part, separator, right_part = i.op_str.rpartition('#')
+                        branch_addr = int(right_part, 16)
+                        branch_type += ' ' + left_part
                     else:
                         branch_addr = int(i.op_str[1:], 16)
                     if (branch_addr >= bytes_to_int(self.old_main_file.codeCaveStart)

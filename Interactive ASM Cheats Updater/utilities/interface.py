@@ -1219,7 +1219,7 @@ class CodeUpdaterInterface:
                     extra_addr_msg = self.gen_addr_msg('multi_addr_located', addr_type, addr_str)
 
                 addr_msg = (  addr_msg
-                            + '\n--------------------------------------------------------------------\n'
+                            + '\n--------------------------------\n'
                             + extra_addr_msg)
 
                 if addr is None or addr_branch is None:
