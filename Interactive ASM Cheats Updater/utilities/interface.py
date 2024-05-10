@@ -143,7 +143,7 @@ class MidASMDataContainer():
     def target_off(self):
         self.is_view_target = False
 
-    def next(self):
+    def previous(self):
         if self.is_view_target:
             if self.branch_target_size == 0:
                 return
@@ -153,7 +153,7 @@ class MidASMDataContainer():
                 return
             self.branch_addr_index = (self.branch_addr_index-1)%len(self.branch_addr_list)
 
-    def previous(self):
+    def next(self):
         if self.is_view_target:
             if self.branch_target_size == 0:
                 return
