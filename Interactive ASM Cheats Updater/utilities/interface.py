@@ -665,9 +665,8 @@ class CodeUpdaterInterface:
         
         try:
             org_file = NSOfile(file_path, self.globalInfo)
-            org_file.process_file()
-            
             if org_file.is_Compressed():
+                org_file.process_file()
                 dec_file_path = org_file.generate_dec_path(file_path)
                 org_file.decompress(dec_file_path)
                 file_path = dec_file_path
@@ -675,6 +674,9 @@ class CodeUpdaterInterface:
         except Exception as e:
             messagebox.showerror(title=self.msgbox_title_map['Error'], message=generate_msg(self.msg_map['NSO file decompression failed']))
             raise NSOtoolError(generate_msg(self.msg_map['NSO file decompression failed']))
+        finally:
+            if 'org_file' in locals() or 'org_file' in globals():
+                del org_file
 
         if is_old_file:
             self.old_main_file = MainNSOStruct(file_path, self.globalInfo)
@@ -1746,6 +1748,7 @@ class CodeUpdaterInterface:
                         initialfile = f'main',
                         filetypes = [('All Files', '*')])
 
+        self.new_main_file.get_NSORaw4Mod_file()
         code_struct = self.code.code_struct
         for code_num in code_struct:
             for chunk_num in code_struct[code_num]:
@@ -1780,12 +1783,16 @@ class CodeUpdaterInterface:
                 save_file = NSOfile(file_path, self.globalInfo)
                 save_file.process_file()
                 save_file.self_compress()
+                self.new_main_file.NSORaw4Mod = None
                 self.logger.info(generate_msg(self.msg_map['NSO file compressed']))
             except Exception as e:
                 self.logger.info(self.str_map['File save failed'])
                 self.logger.exception(e)
                 messagebox.showerror(title=self.msgbox_title_map['Error'], message=self.str_map['File save failed'])
                 return
+            finally:
+                if 'save_file' in locals() or 'save_file' in globals():
+                    del save_file
             self.logger.info(self.str_map['NSO File Saved'])
             messagebox.showinfo(title=self.msgbox_title_map['Info'], message=self.str_map['NSO File Saved'])
             

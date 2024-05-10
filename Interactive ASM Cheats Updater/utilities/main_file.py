@@ -61,7 +61,7 @@ class MainNSOStruct:
         self.bssEnd = 0x0
         self.multimediaStart = 0x0
 
-        self.NSORaw = bytearray()
+        self.NSORaw = None
         self.NSORaw4Mod = bytearray()
         self.mainFuncFile = bytearray()
 
@@ -108,29 +108,27 @@ class MainNSOStruct:
         return contents
 
     def get_struct_from_file(self):
-        buf = bytearray(os.path.getsize(self.file_path))
+        self.NSORaw = bytearray(os.path.getsize(self.file_path))
         with open(self.file_path, 'rb') as fp:
-            fp.readinto(buf)
-        self.NSORaw = buf
-        self.NSORaw4Mod = deepcopy(self.NSORaw)
+            fp.readinto(self.NSORaw)
 
-        self.Magic = bytearray_slice(buf, 0, byteorderbig = False).decode('unicode_escape')
-        self.Flags = bytearray_slice(buf, 3, byteorderbig = False)
-        self.textFileOffset = bytearray_slice(buf, 4, byteorderbig = True)
-        self.textMemoryOffset = bytearray_slice(buf, 5, byteorderbig = True)
-        self.textDecompSize = bytearray_slice(buf, 6, byteorderbig = True)
-        self.ModuleNameOffset = bytearray_slice(buf, 7, byteorderbig = True)
-        self.rodataFileOffset = bytearray_slice(buf, 8, byteorderbig = True)
-        self.rodataMemoryOffset = bytearray_slice(buf, 9, byteorderbig = True)
-        self.rodataDecompSize = bytearray_slice(buf, 10, byteorderbig = True)
-        self.ModuleSize = bytearray_slice(buf, 11, byteorderbig = True)
-        self.rwdataFileOffset = bytearray_slice(buf, 12, byteorderbig = True)
-        self.rwdataMemoryOffset = bytearray_slice(buf, 13, byteorderbig = True)
-        self.rwdataDecompSize = bytearray_slice(buf, 14, byteorderbig = True)
-        self.bssSize = bytearray_slice(buf, 15, byteorderbig = True)
+        self.Magic = bytearray_slice(self.NSORaw, 0, byteorderbig = False).decode('unicode_escape')
+        self.Flags = bytearray_slice(self.NSORaw, 3, byteorderbig = False)
+        self.textFileOffset = bytearray_slice(self.NSORaw, 4, byteorderbig = True)
+        self.textMemoryOffset = bytearray_slice(self.NSORaw, 5, byteorderbig = True)
+        self.textDecompSize = bytearray_slice(self.NSORaw, 6, byteorderbig = True)
+        self.ModuleNameOffset = bytearray_slice(self.NSORaw, 7, byteorderbig = True)
+        self.rodataFileOffset = bytearray_slice(self.NSORaw, 8, byteorderbig = True)
+        self.rodataMemoryOffset = bytearray_slice(self.NSORaw, 9, byteorderbig = True)
+        self.rodataDecompSize = bytearray_slice(self.NSORaw, 10, byteorderbig = True)
+        self.ModuleSize = bytearray_slice(self.NSORaw, 11, byteorderbig = True)
+        self.rwdataFileOffset = bytearray_slice(self.NSORaw, 12, byteorderbig = True)
+        self.rwdataMemoryOffset = bytearray_slice(self.NSORaw, 13, byteorderbig = True)
+        self.rwdataDecompSize = bytearray_slice(self.NSORaw, 14, byteorderbig = True)
+        self.bssSize = bytearray_slice(self.NSORaw, 15, byteorderbig = True)
 
         offset = 16 
-        self.ModuleId = ''.join('{:02x}'.format(x) for x in buf[4*offset : 8+4*offset])
+        self.ModuleId = ''.join('{:02x}'.format(x) for x in self.NSORaw[4*offset : 8+4*offset])
         self.textFileEnd = (bytes_to_int(self.textFileOffset) +
                         bytes_to_int(self.textDecompSize)).to_bytes(4, byteorder='big', signed=False)
         
@@ -156,8 +154,14 @@ class MainNSOStruct:
         if self.is_NSO_file():
             self.mainFuncFile = self.NSORaw[bytes_to_int(self.textFileOffset) : bytes_to_int(self.textFileEnd)]
 
+    def get_NSORaw4Mod_file(self):
+        self.NSORaw4Mod = deepcopy(self.NSORaw)
+
     def is_NSO_file(self):
-        buf = bytearray(os.path.getsize(self.file_path))
+        file_size = os.path.getsize(self.file_path)
+        if file_size < 0x100:
+            return False
+        buf = bytearray(4)
         with open(self.file_path, 'rb') as fp:
             fp.readinto(buf)
         self.Magic = bytearray_slice(buf, 0, byteorderbig = False).decode('unicode_escape')

@@ -22,6 +22,7 @@ generate_msg = lambda x:'\n'.join(eval(x))  # just for static characters
 class NSOfile:
     def __init__(self, file_path: str, globalInfo) -> None:
         self.file_path = file_path
+        self.file_size = 0
         self.globalInfo = globalInfo
         self.Compressed = False
 
@@ -82,7 +83,7 @@ class NSOfile:
         }
 
         # raw bytes
-        self.NSORaw = bytearray()
+        self.NSORaw = None
         self.header = bytearray()
         self.mod = bytearray()
         
@@ -110,15 +111,15 @@ class NSOfile:
         return self.Magic == 'NSO0'
 
     def get_struct_from_file(self):
-        if not self.is_NSO_file():
+        self.file_size = os.path.getsize(self.file_path)
+        if not self.is_NSO_file() or self.file_size < 0x100:
             messagebox.showerror(title=self.msgbox_title_map['Error'], message=generate_msg(self.msg_map['NOT NSO File']))
             raise NSOtoolError(generate_msg(self.msg_map['NOT NSO File']))
         
-        buf = bytearray(os.path.getsize(self.file_path))
+        buf = bytearray(0x100)
         with open(self.file_path, 'rb') as fp:
             fp.readinto(buf)
-        self.NSORaw = buf
-        unpacked_data = struct.unpack(self.nso_header_fmt, buf[:0x100])
+        unpacked_data = struct.unpack(self.nso_header_fmt, buf)
         self.header_info = dict(zip(self.header_info.keys(), unpacked_data))
         self.BID = ''.join(f'{byte:02X}' for byte in self.header_info['note'][:8])
         # self.logger.info(f'BID: {self.BID}')
@@ -135,6 +136,9 @@ class NSOfile:
             pprint.pprint(hex_header_info, sort_dicts=False)
 
     def process_file(self):
+        self.NSORaw = bytearray(self.file_size)
+        with open(self.file_path, 'rb') as fp:
+            fp.readinto(self.NSORaw)
         self.header = self.NSORaw[:self.header_info['flags']]
         self.mod = self.NSORaw[self.header_info['modOffset']:self.header_info['modSize']]
         if self.Compressed:
