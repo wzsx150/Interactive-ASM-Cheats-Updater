@@ -218,10 +218,10 @@ class MidASMDataContainer():
             return (["[.CheatCode]: " + self.branch_target_list[0]], [0.0, 0.0])
 
         if self.is_view_target:
-            if self.get_other_addr_msg(self.branch_target_list[self.branch_target_index], 1, False) is not None:
+            if self.branch_target_list is not None and self.get_other_addr_msg(self.branch_target_list[self.branch_target_index], 1, False) is not None:
                 return self.get_other_addr_msg(self.branch_target_list[self.branch_target_index], 1, False)
         else:
-            if self.get_other_addr_msg(self.branch_addr_list[self.branch_addr_index], 1, False) is not None:
+            if self.branch_addr_list is not None and self.get_other_addr_msg(self.branch_addr_list[self.branch_addr_index], 1, False) is not None:
                 return self.get_other_addr_msg(self.branch_addr_list[self.branch_addr_index], 1, False)
 
         if is_old_file:
@@ -902,10 +902,7 @@ class CodeUpdaterInterface:
         self.btn_next_addr.config(state=DISABLED)
         self.branch_checkbox.config(state=DISABLED)
 
-        if midASMDataContainer.branch_addr_size == 0:
-            midASMDataContainer.target_on()
-            self.is_check_branch.set(True)
-        elif midASMDataContainer.branch_target_size > 0:
+        if midASMDataContainer.branch_target_size > 0:
             self.branch_checkbox.config(state=NORMAL)
 
         if midASMDataContainer.branch_target_size > 1 or midASMDataContainer.branch_addr_size > 1:
@@ -1259,6 +1256,10 @@ class CodeUpdaterInterface:
                 addr = [addr] if isinstance(addr, int) and addr is not None else addr
                 addr_branch = [addr_branch] if (isinstance(addr_branch, int) or isinstance(addr_branch, str)) and addr_branch is not None else addr_branch
                 self.midASMDataContainer.update(self.fetch_wings(), self.fetch_extra_wings(), code_size, org_addr, org_addr_branch, addr, addr_branch)
+                self.update_middle_ASM_output(self.midASMDataContainer)
+            else:
+                code_size = len(code_chunk['contents']['raw'])
+                self.midASMDataContainer.update(self.fetch_wings(), self.fetch_extra_wings(), code_size, org_addr, org_addr_branch, None, None)
                 self.update_middle_ASM_output(self.midASMDataContainer)
 
         self.midASMDataContainer.set_updated()
