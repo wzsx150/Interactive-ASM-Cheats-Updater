@@ -590,14 +590,19 @@ class CodeUpdaterInterface:
 
         self.progress_window.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
         self.progress_window.grab_set()
+        self.progress_window.lift(self.mainWin)
+        self.mainWin.bind("<FocusIn>", lambda event: self.progress_window.lift(self.mainWin))
 
         self.progress_label = tkinter.Label(self.progress_window, text=generate_msg(self.msg_map['processing']))
         self.progress_label.pack(pady=30)
         self.btn_exit = tkinter.Button(self.progress_window, text=self.btn_map['Force Exit'], command=self.force_exit_program, state=DISABLED)
         self.btn_exit.pack(pady=5)
         self.progress_window.after(5000, lambda: self.btn_exit.config(state=NORMAL))  # Hints: 5s
+        self.progress_window.event_generate("<FocusIn>")
+        self.progress_window.focus_set()
 
     def process_window_off(self, event=None):
+        self.mainWin.unbind("<FocusIn>")
         if self.progress_window:
             self.progress_window.grab_release()
             self.progress_window.destroy()
@@ -610,7 +615,7 @@ class CodeUpdaterInterface:
         self.logger.warning('======== Force Exit ========\n')
         self.progress_window.destroy()
         self.mainWin.destroy()
-        time.sleep(2)
+        time.sleep(1)
         sys.exit()
 
     def do_action(self, action):
@@ -620,8 +625,9 @@ class CodeUpdaterInterface:
         thread_action.start()
 
     def do_action_win(self, action):
+        time.sleep(0.1)
         action()
-        self.mainWin.after(0, self.process_window_off)
+        self.mainWin.after(10, self.process_window_off)
 
     # right-click functions
     def selectall(self, event=None):
