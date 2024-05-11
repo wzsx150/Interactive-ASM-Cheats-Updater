@@ -1,4 +1,4 @@
-import os, json, shutil, time, subprocess, chardet
+import os, json, shutil, time, subprocess, chardet, struct, io
 from copy import deepcopy
 from tkinter import messagebox
 from typing import Optional
@@ -16,6 +16,22 @@ def bytearray_slice(bytearray, loc, byteorderbig = False):
 
 def bytes_to_int(bytearray):
     return int.from_bytes(bytearray, byteorder='big', signed=False)
+
+def arm_4bytes_to_bits(byte_data: bytearray) -> bytes:
+    if not byte_data:
+        return b''
+
+    padding_needed = 4 - (len(byte_data) % 4) if len(byte_data) % 4 else 0
+    byte_data += b'\x00' * padding_needed
+
+    output = io.BytesIO()
+    num_ints = len(byte_data) // 4
+    for i in range(num_ints):
+        packed_value = struct.unpack_from('<I', byte_data, i * 4)[0]
+        binary_string = format(packed_value, '032b')
+        output.write(binary_string.encode() + b' ')
+
+    return output.getvalue()
 
 def get_pages_size(code_size):
     return ((code_size & 0xFFFFF000) + 0x1000)
@@ -64,6 +80,7 @@ class MainNSOStruct:
         self.NSORaw = None
         self.NSORaw4Mod = bytearray()
         self.mainFuncFile = bytearray()
+        self.mainFuncFile_bits = b''
 
     def process_file(self):
         if not self.is_NSO_file():
@@ -153,6 +170,9 @@ class MainNSOStruct:
     def get_mainfunc_file(self):
         if self.is_NSO_file():
             self.mainFuncFile = self.NSORaw[bytes_to_int(self.textFileOffset) : bytes_to_int(self.textFileEnd)]
+
+    def get_mainfunc_bits_file(self):
+        self.mainFuncFile_bits = arm_4bytes_to_bits(self.mainFuncFile)
 
     def get_NSORaw4Mod_file(self):
         self.NSORaw4Mod = deepcopy(self.NSORaw)

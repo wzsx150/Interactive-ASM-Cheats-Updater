@@ -1,3 +1,10 @@
+configuration = {
+    "wing_length_default": "[2, 2]",
+    "extra_wing_length_default": "[2, 2]",
+    "widen_hit_num": "8",
+    "max_hit_num": "512",
+}
+
 code_pattern = {
     "loc_EN":
     {
@@ -355,8 +362,6 @@ localization = {
     "loc_EN":
     {
         "title": "Code Updater for Nintendo Switch ver 1.0.2",
-        "wing_length_default": "[1, 1]",
-        "extra_wing_length_default": "[2, 2]",
         "msgbox_title_map":
         {
             "Info": "Info",
@@ -427,11 +432,14 @@ localization = {
             "NSO file decompressed": """['The "main" file decompressed.']""",
             "NSO file compression failed": """['The "main" file compression failed.']""",
             "NSO file compressed": """['The "main" file compressed.']""",
-            "BID message": """[f'BID of the old codes should be "{self.old_main_file.ModuleId.upper()}".']""",
+            "Old BID message": """[f'BID of the old codes should be "{self.old_main_file.ModuleId.upper()}".']""",
+            "New BID message": """[f'BID of the new codes is "{self.new_main_file.ModuleId.upper()}".']""",
             "Pre-process message 0x08": """['080X0000 codes have been splited into 04 atom codes.']""",
 
-            "Wing length check message": """['Wing length must be int or list, eg. "20", "[15,10]". Setting to default value.']""",
-            "Extra wing length check message": """['Extra wing length must be int or list, eg. "20", "[15,10]". Setting to default value.']""",
+            "Wing length check message": """['Wing length must be int or list, eg. "5", "[4,5]". Setting to default value.']""",
+            "Extra wing length check message": """['Extra wing length must be int or list, eg. "6", "[5,6]". Setting to default value.']""",
+            "Change wing length message": """[f'The number of found addresses exceeds the limit ({self.max_hit_num}), making it impossible to display all of them.',
+                                            'It is recommended to adjust the wingspan width and regenerate.']""",
 
             "code_title": """['This is code title.']""",
             "master_code_title": """['This is master code title.']""",
@@ -471,8 +479,6 @@ localization = {
     "loc_CN":
     {
         "title": "金手指自动更新器 ver 1.0.2c",
-        "wing_length_default": "[1, 1]",
-        "extra_wing_length_default": "[2, 2]",
         "msgbox_title_map":
         {
             "Info": "信息",
@@ -543,11 +549,14 @@ localization = {
             "NSO file decompressed": """['"main"文件解压完成']""",
             "NSO file compression failed": """['"main"文件压缩失败']""",
             "NSO file compressed": """['"main"文件压缩完成']""",
-            "BID message": """[f'旧金手指文件名（BID）必须为 "{self.old_main_file.ModuleId.upper()}"']""",
+            "Old BID message": """[f'旧金手指文件名（BID）必须为 "{self.old_main_file.ModuleId.upper()}"']""",
+            "New BID message": """[f'新金手指文件名（BID）为 "{self.new_main_file.ModuleId.upper()}"']""",
             "Pre-process message 0x08": """['080X0000金手指代码已自动缩减为04原子代码']""",
 
-            "Wing length check message": """['翼展宽度必须为整数，如："20"，"[15,10]"']""",
-            "Extra wing length check message": """['额外翼展宽度必须为整数，如："20"，"[15,10]"']""",
+            "Wing length check message": """['翼展宽度必须为整数，如："5"，"[4,5]"']""",
+            "Extra wing length check message": """['额外翼展宽度必须为整数，如："6"，"[5,6]"']""",
+            "Change wing length message": """[f'找到的地址的数量超过上限（{self.max_hit_num}），无法全部显示。',
+                                            '建议调整翼展宽度后重新生成。']""",
 
             "code_title": """['这是普通码标题。']""",
             "master_code_title": """['这是大师码标题。']""",

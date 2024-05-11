@@ -23,8 +23,10 @@ class GlobalInfo:  # Read-ONLY Property
         self.btn_map = localization[language]['btn_map']
         self.msg_map = localization[language]['msg_map']
         self.str_map = localization[language]['str_map']
-        self.wing_length_default = localization[language]['wing_length_default']
-        self.extra_wing_length_default = localization[language]['extra_wing_length_default']
+        self.wing_length_default = configuration['wing_length_default']
+        self.extra_wing_length_default = configuration['extra_wing_length_default']
+        self.widen_hit_num = int(configuration['widen_hit_num'])
+        self.max_hit_num = int(configuration['max_hit_num'])
 
         self.code_pattern = code_pattern[language]
 

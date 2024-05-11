@@ -16,7 +16,8 @@ from utilities.game_package import GamePackage
 from utilities.main_file import *
 from utilities.nsnsotool import NSOfile
 from utilities.code_structer import CodeStruct, PseudoStack
-from utilities.bytes_process import *
+# from utilities.bytes_process import *
+from utilities.bits_process import *
 from utilities.exception import *
 from utilities.logger import *
 
@@ -309,6 +310,8 @@ class CodeUpdaterInterface:
         self.str_map = globalInfo.str_map
         self.wing_length_default = globalInfo.wing_length_default
         self.extra_wing_length_default = globalInfo.extra_wing_length_default
+        self.widen_hit_num = globalInfo.widen_hit_num
+        self.max_hit_num = globalInfo.max_hit_num
         self.supported_package_type = globalInfo.supported_package_type
         self.code_pattern = globalInfo.code_pattern
 
@@ -690,15 +693,15 @@ class CodeUpdaterInterface:
             self.logger.info(f'Old Main File BID: {self.old_main_file.ModuleId.upper()}')
             self.logger.info(f'Old Main File information: \n{pprint.pformat(self.old_main_file.to_Json(), sort_dicts=False)}')
             self.input_cheats_script.config(text='\n'.join(eval(self.hints_map['Input Old Codes and BID:'])))
+            messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['Old BID message'])))
         else:
             self.new_main_file = MainNSOStruct(file_path, self.globalInfo)
             self.new_is_NSO_file = self.new_main_file.process_file()
+            self.new_main_file.get_mainfunc_bits_file()
             self.logger.info(f'New Main File BID: {self.new_main_file.ModuleId.upper()}')
             self.logger.info(f'New Main File information: \n{pprint.pformat(self.new_main_file.to_Json(), sort_dicts=False)}')
             self.output_cheats_script.config(text='\n'.join(eval(self.hints_map['New Codes Output and BID:'])))
-
-        if is_old_file:
-            messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['BID message'])))
+            messagebox.showinfo(title=self.msgbox_title_map['Info'], message='\n'.join(eval(self.msg_map['New BID message'])))
 
     def update_old_file_entry(self, msg: str):
         self.old_file_entry.config(state=NORMAL)
@@ -1364,9 +1367,15 @@ class CodeUpdaterInterface:
             wing_length = [wing_length[1], wing_length[1]]
 
         main_file_bundle = [self.old_main_file.mainFuncFile, self.new_main_file.mainFuncFile]
+        main_file_bits_bundle = [self.old_main_file.mainFuncFile_bits, self.new_main_file.mainFuncFile_bits]
 
-        [hit_start_addr, wing_length, real_addr_offset] = find_feature_addr(main_file_bundle, addr_range, wing_length, self.code.ASM_type)
+        # [hit_start_addr, wing_length, real_addr_offset] = find_feature_addr(main_file_bundle, addr_range, wing_length, self.code.ASM_type)
+        [hit_start_addr, wing_length, real_addr_offset] = find_bits_feature_addr(main_file_bundle, main_file_bits_bundle, addr_range, wing_length, self.code.ASM_type)
         self.wing_text_update(str(wing_length), code_type)
+        
+        if len(hit_start_addr) > self.max_hit_num:
+            self.logger.warning('\n'.join(eval(self.msg_map['Change wing length message'])))
+            messagebox.showwarning(title=self.msgbox_title_map['Warning'], message='\n'.join(eval(self.msg_map['Change wing length message'])))
         
         if len(hit_start_addr) == 0:
             return None
